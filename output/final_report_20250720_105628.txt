@@ -1,0 +1,36 @@
+================================================================================
+FINANCIAL SENTIMENT ANALYSIS - FINAL REPORT
+================================================================================
+
+Report Generated: 2025-07-20 10:56:28
+
+1. DATASET INFORMATION:
+------------------------------
+Shape: (5842, 2)
+Columns: ['Sentence', 'Sentiment']
+Class Distribution: {'neutral': 3130, 'positive': 1852, 'negative': 860}
+Null Values: {'Sentence': 0, 'Sentiment': 0}
+
+2. PREPROCESSING RESULTS:
+------------------------------
+Original texts: 5842
+Processed texts: 5842
+Avg length before: 117.0
+Avg length after: 91.9
+
+3. FEATURE EXTRACTION:
+------------------------------
+Vectorizer: tfidf
+Vocabulary size: 5000
+Feature matrix shape: (4673, 5000)
+
+4. MODEL PERFORMANCE:
+------------------------------
+Accuracy: 0.7015
+Precision (macro): 0.6757
+Recall (macro): 0.5440
+F1-Score (macro): 0.5400
+CV Mean Score: 0.6889
+CV Std Score: 0.0102
+
+================================================================================

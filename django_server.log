@@ -1,0 +1,23 @@
+Watching for file changes with StatReloader
+Model loaded successfully
+INFO:sentiment_app.views:Model loaded successfully
+Vectorizer loaded successfully
+INFO:sentiment_app.views:Vectorizer loaded successfully
+System check identified some issues:
+
+WARNINGS:
+?: (staticfiles.W004) The directory '/home/biplovgautam/Desktop/aiassignment/static' in the STATICFILES_DIRS setting does not exist.
+
+System check identified 1 issue (0 silenced).
+"GET / HTTP/1.1" 200 1870
+INFO:django.server:"GET / HTTP/1.1" 200 1870
+Not Found: /favicon.ico
+WARNING:django.request:Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 3375
+WARNING:django.server:"GET /favicon.ico HTTP/1.1" 404 3375
+"GET /demo/ HTTP/1.1" 200 5297
+INFO:django.server:"GET /demo/ HTTP/1.1" 200 5297
+"POST /api/predict/ HTTP/1.1" 200 250
+INFO:django.server:"POST /api/predict/ HTTP/1.1" 200 250
+"POST /api/predict/ HTTP/1.1" 200 247
+INFO:django.server:"POST /api/predict/ HTTP/1.1" 200 247

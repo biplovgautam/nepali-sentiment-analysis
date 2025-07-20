@@ -1,0 +1,148 @@
+INFO:__main__:SentimentAnalysisPipeline initialized
+INFO:__main__:********************************************************************************
+INFO:__main__:STARTING FINANCIAL SENTIMENT ANALYSIS PIPELINE
+INFO:__main__:********************************************************************************
+INFO:__main__:============================================================
+INFO:__main__:STEP 1: DATA LOADING
+INFO:__main__:============================================================
+INFO:utils.loader:Dataset loaded successfully. Shape: (5842, 2)
+INFO:utils.loader:Dataset validation passed
+INFO:__main__:Dataset loaded successfully. Shape: (5842, 2)
+INFO:__main__:Class distribution: {'neutral': 3130, 'positive': 1852, 'negative': 860}
+INFO:__main__:============================================================
+INFO:__main__:STEP 2: EXPLORATORY DATA ANALYSIS
+INFO:__main__:============================================================
+INFO:utils.eda:Starting comprehensive EDA...
+INFO:utils.eda:Generating EDA visualizations...
+INFO:utils.eda:Class distribution plot saved to /home/biplovgautam/Desktop/aiassignment/output/class_distribution.png
+/home/biplovgautam/Desktop/aiassignment/utils/eda.py:73: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+INFO:utils.eda:Sentence length distribution plot saved to /home/biplovgautam/Desktop/aiassignment/output/sentence_length_distribution.png
+/home/biplovgautam/Desktop/aiassignment/utils/eda.py:184: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+INFO:utils.eda:Word cloud for positive saved to /home/biplovgautam/Desktop/aiassignment/output/wordcloud_positive.png
+INFO:utils.eda:Word cloud for negative saved to /home/biplovgautam/Desktop/aiassignment/output/wordcloud_negative.png
+INFO:utils.eda:Word cloud for neutral saved to /home/biplovgautam/Desktop/aiassignment/output/wordcloud_neutral.png
+INFO:utils.eda:Combined word clouds saved to /home/biplovgautam/Desktop/aiassignment/output/wordclouds_combined.png
+/home/biplovgautam/Desktop/aiassignment/utils/eda.py:239: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+INFO:utils.eda:Word frequency analysis plot saved to /home/biplovgautam/Desktop/aiassignment/output/word_frequency_analysis.png
+/home/biplovgautam/Desktop/aiassignment/utils/eda.py:296: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+INFO:utils.eda:EDA completed successfully
+INFO:__main__:EDA completed successfully
+INFO:__main__:============================================================
+INFO:__main__:STEP 3: TEXT PREPROCESSING
+INFO:__main__:============================================================
+INFO:utils.preprocess:TextPreprocessor initialized successfully
+INFO:__main__:Preprocessing text data...
+INFO:utils.preprocess:Preprocessing 5842 texts
+INFO:utils.preprocess:Processed 1000/5842 texts
+INFO:utils.preprocess:Processed 2000/5842 texts
+INFO:utils.preprocess:Processed 3000/5842 texts
+INFO:utils.preprocess:Processed 4000/5842 texts
+INFO:utils.preprocess:Processed 5000/5842 texts
+INFO:utils.preprocess:Text preprocessing completed
+INFO:__main__:Text preprocessing completed
+INFO:__main__:Average length before: 117.0
+INFO:__main__:Average length after: 91.9
+INFO:__main__:============================================================
+INFO:__main__:STEP 4: FEATURE EXTRACTION
+INFO:__main__:============================================================
+INFO:utils.vectorizer:FeatureExtractor initialized with tfidf vectorizer
+INFO:__main__:Fitting vectorizer on training data...
+INFO:utils.vectorizer:Fitting tfidf vectorizer on 4673 texts
+INFO:utils.vectorizer:Vectorizer fitted. Vocabulary size: 3000
+INFO:utils.vectorizer:Transforming 4672 texts to feature vectors
+/home/biplovgautam/.local/lib/python3.13/site-packages/scipy/sparse/_index.py:201: SparseEfficiencyWarning: Changing the sparsity structure of a csr_matrix is expensive. lil and dok are more efficient.
+  self._set_arrayXarray_sparse(i, j, x)
+INFO:utils.vectorizer:Feature matrix shape: (4673, 3000)
+INFO:__main__:Transforming test data...
+INFO:utils.vectorizer:Transforming 1169 texts to feature vectors
+INFO:utils.vectorizer:Feature matrix shape: (1169, 3000)
+INFO:__main__:Feature extraction completed
+INFO:__main__:Training set: (4673, 3000)
+INFO:__main__:Test set: (1169, 3000)
+INFO:__main__:Vocabulary size: 3000
+INFO:__main__:============================================================
+INFO:__main__:STEP 5: MODEL TRAINING
+INFO:__main__:============================================================
+INFO:utils.model:SentimentClassifier initialized with alpha=1.0
+INFO:utils.model:Starting model training...
+INFO:utils.model:Model training completed. Training accuracy: 0.7708
+INFO:utils.model:Evaluating model performance...
+INFO:utils.model:Model evaluation completed. Test accuracy: 0.7040
+INFO:utils.model:Performing 5-fold cross-validation...
+
+================================================================================
+SAMPLE SENTENCES FROM EACH CLASS
+================================================================================
+
+POSITIVE SENTIMENT:
+--------------------------------------------------
+1. The GeoSolutions technology will leverage Benefon 's GPS solutions by providing Location Based Search Technology , a Communities Platform , location relevant multimedia content and a new and powerful commercial model .
+2. For the last quarter of 2010 , Componenta 's net sales doubled to EUR131m from EUR76m for the same period a year earlier , while it moved to a zero pre-tax profit from a pre-tax loss of EUR7m .
+3. $SPY wouldn't be surprised to see a green close
+
+NEGATIVE SENTIMENT:
+--------------------------------------------------
+1. $ESI on lows, down $1.50 to $2.50 BK a real possibility
+2. Shell's $70 Billion BG Deal Meets Shareholder Skepticism
+3. SSH COMMUNICATIONS SECURITY CORP STOCK EXCHANGE RELEASE OCTOBER 14 , 2008 AT 2:45 PM The Company updates its full year outlook and estimates its results to remain at loss for the full year .
+
+NEUTRAL SENTIMENT:
+--------------------------------------------------
+1. According to the Finnish-Russian Chamber of Commerce , all the major construction companies of Finland are operating in Russia .
+2. The Swedish buyout firm has sold its remaining 22.4 percent stake , almost eighteen months after taking the company public in Finland .
+3. The Stockmann department store will have a total floor space of over 8,000 square metres and Stockmann 's investment in the project will have a price tag of about EUR 12 million .
+================================================================================
+
+INFO:utils.model:Cross-validation completed. Mean accuracy: 0.6835 (+/- 0.0221)
+INFO:utils.model:Model training and evaluation pipeline completed
+INFO:__main__:Model training completed
+INFO:__main__:Test accuracy: 0.7040
+INFO:__main__:============================================================
+INFO:__main__:STEP 6: MODEL EVALUATION
+INFO:__main__:============================================================
+INFO:utils.evaluator:ModelEvaluator initialized. Output directory: /home/biplovgautam/Desktop/aiassignment/output
+INFO:utils.evaluator:ModelEvaluator initialized. Output directory: /home/biplovgautam/Desktop/aiassignment/output
+INFO:utils.evaluator:Calculating evaluation metrics...
+INFO:utils.evaluator:Metrics calculated. Accuracy: 0.7040
+INFO:utils.evaluator:Generating comprehensive evaluation report...
+INFO:utils.evaluator:Calculating evaluation metrics...
+INFO:utils.evaluator:Metrics calculated. Accuracy: 0.7040
+INFO:utils.evaluator:Saving evaluation results for NaiveBayes_FinancialSentiment...
+INFO:utils.evaluator:Generating comprehensive evaluation report...
+INFO:utils.evaluator:Calculating evaluation metrics...
+INFO:utils.evaluator:Metrics calculated. Accuracy: 0.7040
+INFO:utils.evaluator:Evaluation report saved to /home/biplovgautam/Desktop/aiassignment/output/NaiveBayes_FinancialSentiment_evaluation/NaiveBayes_FinancialSentiment_evaluation_report.txt
+INFO:utils.evaluator:Confusion matrix saved to /home/biplovgautam/Desktop/aiassignment/output/NaiveBayes_FinancialSentiment_evaluation/NaiveBayes_FinancialSentiment_confusion_matrix.png
+/home/biplovgautam/Desktop/aiassignment/utils/evaluator.py:148: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+INFO:utils.evaluator:Classification report heatmap saved to /home/biplovgautam/Desktop/aiassignment/output/NaiveBayes_FinancialSentiment_evaluation/NaiveBayes_FinancialSentiment_classification_report.png
+/home/biplovgautam/Desktop/aiassignment/utils/evaluator.py:207: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+INFO:utils.evaluator:ROC curves saved to /home/biplovgautam/Desktop/aiassignment/output/NaiveBayes_FinancialSentiment_evaluation/NaiveBayes_FinancialSentiment_roc_curves.png
+/home/biplovgautam/Desktop/aiassignment/utils/evaluator.py:258: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+INFO:__main__:Model evaluation completed
+INFO:__main__:Final accuracy: 0.7040
+INFO:__main__:============================================================
+INFO:__main__:STEP 7: SAVING MODELS
+INFO:__main__:============================================================
+INFO:utils.model:Model saved to /home/biplovgautam/Desktop/aiassignment/models/naive_bayes_model.pkl
+INFO:utils.vectorizer:Vectorizer saved to /home/biplovgautam/Desktop/aiassignment/models/vectorizer.pkl
+INFO:__main__:Models saved successfully
+INFO:__main__:Model: /home/biplovgautam/Desktop/aiassignment/models/naive_bayes_model.pkl
+INFO:__main__:Vectorizer: /home/biplovgautam/Desktop/aiassignment/models/vectorizer.pkl
+INFO:__main__:============================================================
+INFO:__main__:STEP 8: GENERATING FINAL REPORT
+INFO:__main__:============================================================
+INFO:__main__:Final report saved to: /home/biplovgautam/Desktop/aiassignment/output/final_report_20250720_114110.txt
+INFO:__main__:********************************************************************************
+INFO:__main__:PIPELINE COMPLETED SUCCESSFULLY
+INFO:__main__:Total execution time: 0:00:23.707976
+INFO:__main__:********************************************************************************
+
+✅ Pipeline completed successfully in 0:00:23.707976
+📊 Final model accuracy: 0.7040
