@@ -403,6 +403,361 @@ def perform_comprehensive_eda(X: pd.Series, y: pd.Series, output_dir: str = OUTP
     }
 
 
+def comprehensive_eda(df, output_dir, title_prefix="Data"):
+    """
+    Perform comprehensive exploratory data analysis.
+    
+    Args:
+        df (pd.DataFrame): Dataset to analyze
+        output_dir (str): Directory to save plots
+        title_prefix (str): Prefix for plot titles
+        
+    Returns:
+        dict: EDA results and statistics
+    """
+    logger.info("Starting comprehensive EDA...")
+    
+    results = {}
+    
+    # 1. Class distribution
+    class_dist_path = os.path.join(output_dir, 'class_distribution.png')
+    plot_class_distribution(df['Sentiment'], class_dist_path)
+    
+    # 2. Text length analysis
+    text_length_path = os.path.join(output_dir, 'text_length_analysis.png')
+    plot_text_length_analysis(df, text_length_path, title_prefix)
+    
+    # 3. Word frequency analysis
+    word_freq_path = os.path.join(output_dir, 'word_frequency_analysis.png')
+    plot_word_frequency_analysis(df, word_freq_path, title_prefix)
+    
+    # 4. Word clouds for each sentiment
+    wordcloud_dir = os.path.join(output_dir, 'wordclouds')
+    os.makedirs(wordcloud_dir, exist_ok=True)
+    generate_wordclouds(df['Sentence'], df['Sentiment'], save_dir=wordcloud_dir)
+    
+    # 5. Generate statistics
+    results['statistics'] = generate_eda_statistics(df)
+    
+    # 6. Print sample sentences
+    print_sample_sentences(df['Sentence'], df['Sentiment'])
+    
+    logger.info("Comprehensive EDA completed")
+    return results
+
+
+def plot_text_length_analysis(df, save_path, title_prefix="Data"):
+    """
+    Plot text length distribution analysis.
+    
+    Args:
+        df (pd.DataFrame): Dataset
+        save_path (str): Path to save plot
+        title_prefix (str): Prefix for plot title
+    """
+    plt.figure(figsize=(15, 10))
+    
+    # Calculate text lengths
+    df_copy = df.copy()
+    df_copy['text_length'] = df_copy['Sentence'].str.len()
+    df_copy['word_count'] = df_copy['Sentence'].str.split().str.len()
+    
+    # 1. Overall text length distribution
+    plt.subplot(2, 3, 1)
+    plt.hist(df_copy['text_length'], bins=50, alpha=0.7, color='skyblue', edgecolor='black')
+    plt.title(f'{title_prefix}: Text Length Distribution')
+    plt.xlabel('Character Count')
+    plt.ylabel('Frequency')
+    plt.axvline(df_copy['text_length'].mean(), color='red', linestyle='--', 
+                label=f'Mean: {df_copy["text_length"].mean():.1f}')
+    plt.legend()
+    
+    # 2. Word count distribution
+    plt.subplot(2, 3, 2)
+    plt.hist(df_copy['word_count'], bins=50, alpha=0.7, color='lightgreen', edgecolor='black')
+    plt.title(f'{title_prefix}: Word Count Distribution')
+    plt.xlabel('Word Count')
+    plt.ylabel('Frequency')
+    plt.axvline(df_copy['word_count'].mean(), color='red', linestyle='--',
+                label=f'Mean: {df_copy["word_count"].mean():.1f}')
+    plt.legend()
+    
+    # 3. Text length by sentiment
+    plt.subplot(2, 3, 3)
+    sentiments = df_copy['Sentiment'].unique()
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+    
+    for i, sentiment in enumerate(sentiments):
+        sentiment_data = df_copy[df_copy['Sentiment'] == sentiment]['text_length']
+        plt.hist(sentiment_data, bins=30, alpha=0.6, label=sentiment, 
+                color=colors[i % len(colors)])
+    
+    plt.title(f'{title_prefix}: Text Length by Sentiment')
+    plt.xlabel('Character Count')
+    plt.ylabel('Frequency')
+    plt.legend()
+    
+    # 4. Box plot of text lengths by sentiment
+    plt.subplot(2, 3, 4)
+    sentiment_lengths = [df_copy[df_copy['Sentiment'] == s]['text_length'].values 
+                        for s in sentiments]
+    plt.boxplot(sentiment_lengths, labels=sentiments, patch_artist=True)
+    
+    # Color the boxes
+    for patch, color in zip(plt.gca().patches, PLOT_CONFIG['color_palette']):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.7)
+    
+    plt.title(f'{title_prefix}: Text Length Box Plot')
+    plt.ylabel('Character Count')
+    plt.xticks(rotation=45)
+    
+    # 5. Word count by sentiment
+    plt.subplot(2, 3, 5)
+    sentiment_words = [df_copy[df_copy['Sentiment'] == s]['word_count'].values 
+                      for s in sentiments]
+    plt.boxplot(sentiment_words, labels=sentiments, patch_artist=True)
+    
+    # Color the boxes
+    for patch, color in zip(plt.gca().patches, PLOT_CONFIG['color_palette']):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.7)
+    
+    plt.title(f'{title_prefix}: Word Count Box Plot')
+    plt.ylabel('Word Count')
+    plt.xticks(rotation=45)
+    
+    # 6. Summary statistics table
+    plt.subplot(2, 3, 6)
+    stats_text = f"{title_prefix} Statistics:\n\n"
+    stats_text += f"Total samples: {len(df_copy)}\n"
+    stats_text += f"Avg text length: {df_copy['text_length'].mean():.1f}\n"
+    stats_text += f"Avg word count: {df_copy['word_count'].mean():.1f}\n"
+    stats_text += f"Min length: {df_copy['text_length'].min()}\n"
+    stats_text += f"Max length: {df_copy['text_length'].max()}\n\n"
+    
+    for sentiment in sentiments:
+        count = len(df_copy[df_copy['Sentiment'] == sentiment])
+        pct = (count / len(df_copy)) * 100
+        stats_text += f"{sentiment}: {count} ({pct:.1f}%)\n"
+    
+    plt.text(0.1, 0.9, stats_text, transform=plt.gca().transAxes, 
+             fontsize=10, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+    plt.axis('off')
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    logger.info(f"Text length analysis saved to {save_path}")
+    plt.show()
+
+
+def plot_word_frequency_analysis(df, save_path, title_prefix="Data"):
+    """
+    Plot word frequency analysis.
+    
+    Args:
+        df (pd.DataFrame): Dataset
+        save_path (str): Path to save plot
+        title_prefix (str): Prefix for plot title
+    """
+    from collections import Counter
+    import re
+    
+    plt.figure(figsize=(15, 10))
+    
+    # Get all words
+    all_text = ' '.join(df['Sentence'].astype(str))
+    words = re.findall(r'\b\w+\b', all_text.lower())
+    word_freq = Counter(words)
+    
+    # Overall top words
+    plt.subplot(2, 2, 1)
+    top_words = word_freq.most_common(20)
+    words_list, counts_list = zip(*top_words)
+    
+    plt.barh(range(len(words_list)), counts_list, color='lightblue')
+    plt.yticks(range(len(words_list)), words_list)
+    plt.xlabel('Frequency')
+    plt.title(f'{title_prefix}: Top 20 Most Frequent Words')
+    plt.gca().invert_yaxis()
+    
+    # Words by sentiment
+    sentiments = df['Sentiment'].unique()
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+    
+    for i, sentiment in enumerate(sentiments):
+        plt.subplot(2, 2, i + 2)
+        sentiment_text = ' '.join(df[df['Sentiment'] == sentiment]['Sentence'].astype(str))
+        sentiment_words = re.findall(r'\b\w+\b', sentiment_text.lower())
+        sentiment_freq = Counter(sentiment_words)
+        
+        top_sentiment_words = sentiment_freq.most_common(15)
+        if top_sentiment_words:
+            words_list, counts_list = zip(*top_sentiment_words)
+            
+            plt.barh(range(len(words_list)), counts_list, color=colors[i])
+            plt.yticks(range(len(words_list)), words_list)
+            plt.xlabel('Frequency')
+            plt.title(f'{sentiment.title()} Sentiment: Top Words')
+            plt.gca().invert_yaxis()
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    logger.info(f"Word frequency analysis saved to {save_path}")
+    plt.show()
+
+
+def generate_comparison_plots(df, output_dir, original_col='Sentence', processed_col='Processed_Sentence'):
+    """
+    Generate before/after preprocessing comparison plots.
+    
+    Args:
+        df (pd.DataFrame): Dataset with original and processed columns
+        output_dir (str): Directory to save plots
+        original_col (str): Name of original text column
+        processed_col (str): Name of processed text column
+    """
+    plt.figure(figsize=(16, 12))
+    
+    # Calculate lengths
+    original_lengths = df[original_col].str.len()
+    processed_lengths = df[processed_col].str.len()
+    
+    # 1. Length comparison histogram
+    plt.subplot(3, 3, 1)
+    plt.hist(original_lengths, bins=50, alpha=0.6, label='Original', color='lightcoral')
+    plt.hist(processed_lengths, bins=50, alpha=0.6, label='Processed', color='lightblue')
+    plt.xlabel('Text Length')
+    plt.ylabel('Frequency')
+    plt.title('Text Length: Before vs After Preprocessing')
+    plt.legend()
+    
+    # 2. Length reduction scatter plot
+    plt.subplot(3, 3, 2)
+    reduction_ratio = (original_lengths - processed_lengths) / original_lengths
+    plt.scatter(original_lengths, reduction_ratio, alpha=0.5, s=10)
+    plt.xlabel('Original Length')
+    plt.ylabel('Length Reduction Ratio')
+    plt.title('Length Reduction vs Original Length')
+    plt.axhline(y=reduction_ratio.mean(), color='red', linestyle='--', 
+                label=f'Mean: {reduction_ratio.mean():.2%}')
+    plt.legend()
+    
+    # 3. Word count comparison
+    plt.subplot(3, 3, 3)
+    original_words = df[original_col].str.split().str.len()
+    processed_words = df[processed_col].str.split().str.len()
+    
+    plt.hist(original_words, bins=30, alpha=0.6, label='Original', color='lightcoral')
+    plt.hist(processed_words, bins=30, alpha=0.6, label='Processed', color='lightblue')
+    plt.xlabel('Word Count')
+    plt.ylabel('Frequency')
+    plt.title('Word Count: Before vs After')
+    plt.legend()
+    
+    # 4. Box plots by sentiment - Original
+    plt.subplot(3, 3, 4)
+    sentiments = df['Sentiment'].unique()
+    original_by_sentiment = [df[df['Sentiment'] == s][original_col].str.len().values 
+                           for s in sentiments]
+    plt.boxplot(original_by_sentiment, labels=sentiments, patch_artist=True)
+    
+    # Color the boxes
+    for patch, color in zip(plt.gca().patches, PLOT_CONFIG['color_palette']):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.7)
+    
+    plt.ylabel('Character Count')
+    plt.title('Original Text Length by Sentiment')
+    plt.xticks(rotation=45)
+    
+    # 5. Box plots by sentiment - Processed
+    plt.subplot(3, 3, 5)
+    processed_by_sentiment = [df[df['Sentiment'] == s][processed_col].str.len().values 
+                            for s in sentiments]
+    plt.boxplot(processed_by_sentiment, labels=sentiments, patch_artist=True)
+    
+    # Color the boxes
+    for patch, color in zip(plt.gca().patches, PLOT_CONFIG['color_palette']):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.7)
+    
+    plt.ylabel('Character Count')
+    plt.title('Processed Text Length by Sentiment')
+    plt.xticks(rotation=45)
+    
+    # 6. Reduction ratio by sentiment
+    plt.subplot(3, 3, 6)
+    reduction_by_sentiment = []
+    for sentiment in sentiments:
+        sentiment_data = df[df['Sentiment'] == sentiment]
+        orig_len = sentiment_data[original_col].str.len()
+        proc_len = sentiment_data[processed_col].str.len()
+        reduction = (orig_len - proc_len) / orig_len
+        reduction_by_sentiment.append(reduction.values)
+    
+    plt.boxplot(reduction_by_sentiment, labels=sentiments)
+    plt.ylabel('Length Reduction Ratio')
+    plt.title('Length Reduction by Sentiment')
+    plt.xticks(rotation=45)
+    
+    # 7-9. Sample text comparisons
+    for i, sentiment in enumerate(sentiments[:3]):
+        plt.subplot(3, 3, 7 + i)
+        sentiment_data = df[df['Sentiment'] == sentiment].iloc[0]
+        
+        sample_text = f"ORIGINAL ({sentiment}):\n{sentiment_data[original_col][:100]}...\n\n"
+        sample_text += f"PROCESSED:\n{sentiment_data[processed_col][:100]}..."
+        
+        plt.text(0.05, 0.95, sample_text, transform=plt.gca().transAxes,
+                fontsize=8, verticalalignment='top', wrap=True,
+                bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+        plt.axis('off')
+        plt.title(f'Sample {sentiment.title()} Text')
+    
+    plt.tight_layout()
+    
+    comparison_path = os.path.join(output_dir, 'preprocessing_comparison.png')
+    plt.savefig(comparison_path, dpi=300, bbox_inches='tight')
+    logger.info(f"Preprocessing comparison saved to {comparison_path}")
+    plt.show()
+    
+    # Generate summary statistics
+    stats = {
+        'original_avg_length': original_lengths.mean(),
+        'processed_avg_length': processed_lengths.mean(),
+        'avg_reduction_ratio': reduction_ratio.mean(),
+        'original_avg_words': original_words.mean(),
+        'processed_avg_words': processed_words.mean()
+    }
+    
+    return stats
+
+
+def generate_eda_statistics(df):
+    """
+    Generate comprehensive statistics for the dataset.
+    
+    Args:
+        df (pd.DataFrame): Dataset
+        
+    Returns:
+        dict: Statistics dictionary
+    """
+    stats = {
+        'total_samples': len(df),
+        'class_distribution': df['Sentiment'].value_counts().to_dict(),
+        'avg_text_length': df['Sentence'].str.len().mean(),
+        'median_text_length': df['Sentence'].str.len().median(),
+        'avg_word_count': df['Sentence'].str.split().str.len().mean(),
+        'unique_texts': df['Sentence'].nunique(),
+        'duplicate_texts': len(df) - df['Sentence'].nunique()
+    }
+    
+    return stats
+
+
 if __name__ == "__main__":
     # Test EDA functions with sample data
     from utils.loader import load_and_prepare_data

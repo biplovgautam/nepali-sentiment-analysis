@@ -1,563 +1,403 @@
+#!/usr/bin/env python3
 """
-Main script for Financial Sentiment Analysis using Naïve Bayes.
-Controls the entire ML pipeline from data loading to model deployment.
+Enhanced Financial Sentiment Analysis ML Pipeline
+=================================================
+
+This script provides a complete ML pipeline with:
+- Improved data loading and validation
+- Advanced preprocessing with before/after visualization
+- Intelligent data balancing
+- Comprehensive model training and evaluation
+- Performance optimization and tuning
+
+Author: AI Assistant
+Date: July 20, 2025
 """
 
-import pandas as pd
-import numpy as np
-import logging
 import os
 import sys
 import argparse
+import logging
+import warnings
+import pandas as pd
+import numpy as np
 from datetime import datetime
-from typing import Dict, Any, Tuple
+from pathlib import Path
+
+# Add project root to path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import project modules
-from config import *
-from utils.loader import load_dataset, validate_dataset
-from utils.eda import perform_comprehensive_eda
-from utils.preprocess import TextPreprocessor
-from utils.tokenizer import create_tokenizer
+from utils.loader import load_dataset, validate_dataset, clean_initial_data
+from utils.eda import comprehensive_eda, generate_comparison_plots
+from utils.preprocess import TextPreprocessor, preprocess_dataset
 from utils.vectorizer import create_feature_extractor
-from utils.model import create_sentiment_classifier, train_and_evaluate_model
+from utils.model import SentimentClassifier, train_and_evaluate_model
 from utils.evaluator import ModelEvaluator
+from config import *
 
-# Set up logging
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+# Suppress warnings for cleaner output
+warnings.filterwarnings('ignore')
+
+# Configure logging
 logging.basicConfig(
-    level=getattr(logging, LOGGING_CONFIG['level']),
-    format=LOGGING_CONFIG['format'],
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(LOGGING_CONFIG['filename']),
+        logging.FileHandler(os.path.join(OUTPUT_DIR, 'ml_pipeline.log')),
         logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
 
 
-class SentimentAnalysisPipeline:
+class EnhancedMLPipeline:
     """
-    Complete sentiment analysis pipeline orchestrator.
+    Enhanced ML Pipeline for Financial Sentiment Analysis with focus on:
+    - Data quality and balancing
+    - Preprocessing optimization
+    - Model performance
     """
     
-    def __init__(self, config_overrides: Dict[str, Any] = None):
-        """
-        Initialize the pipeline.
-        
-        Args:
-            config_overrides (Dict[str, Any], optional): Configuration overrides
-        """
-        self.config = {
-            'model': MODEL_CONFIG.copy(),
-            'preprocessing': PREPROCESSING_CONFIG.copy(),
-            'vectorizer': VECTORIZER_CONFIG.copy(),
-            'cv': CV_CONFIG.copy(),
-            'plot': PLOT_CONFIG.copy()
-        }
-        
-        # Apply overrides if provided
-        if config_overrides:
-            for section, overrides in config_overrides.items():
-                if section in self.config:
-                    self.config[section].update(overrides)
-        
-        # Initialize components
-        self.data = None
-        self.preprocessor = None
-        self.tokenizer = None
-        self.vectorizer = None
+    def __init__(self, config=None):
+        """Initialize the enhanced ML pipeline."""
+        self.config = config or {}
+        self.raw_data = None
+        self.cleaned_data = None
+        self.balanced_data = None
+        self.processed_data = None
+        self.train_data = None
         self.model = None
-        self.evaluator = None
+        self.vectorizer = None
+        self.results = {}
         
-        # Results storage
-        self.results = {
-            'data_info': {},
-            'eda_results': {},
-            'preprocessing_results': {},
-            'feature_extraction_results': {},
-            'model_results': {},
-            'evaluation_results': {}
-        }
-        
-        logger.info("SentimentAnalysisPipeline initialized")
+        logger.info("Enhanced ML Pipeline initialized")
     
-    def load_data(self, dataset_path: str = DATASET_PATH) -> pd.DataFrame:
-        """
-        Load and validate the dataset.
-        
-        Args:
-            dataset_path (str): Path to the dataset
-            
-        Returns:
-            pd.DataFrame: Loaded and validated dataset
-        """
-        logger.info("=" * 60)
-        logger.info("STEP 1: DATA LOADING")
-        logger.info("=" * 60)
+    def load_and_analyze_data(self, dataset_path=DATASET_PATH):
+        """Load and perform initial analysis of the dataset."""
+        logger.info("Step 1: Loading and analyzing raw data...")
         
         # Load dataset
-        self.data = load_dataset(dataset_path)
+        self.raw_data = load_dataset(dataset_path)
+        self.raw_data = validate_dataset(self.raw_data)
         
-        # Validate dataset
-        self.data = validate_dataset(self.data)
+        # Generate raw data EDA
+        raw_eda_dir = os.path.join(OUTPUT_DIR, 'raw_data_analysis')
+        os.makedirs(raw_eda_dir, exist_ok=True)
         
-        # Store data info
-        self.results['data_info'] = {
-            'shape': self.data.shape,
-            'columns': self.data.columns.tolist(),
-            'class_distribution': self.data['Sentiment'].value_counts().to_dict(),
-            'null_values': self.data.isnull().sum().to_dict(),
-            'dataset_path': dataset_path
-        }
-        
-        logger.info(f"Dataset loaded successfully. Shape: {self.data.shape}")
-        logger.info(f"Class distribution: {self.results['data_info']['class_distribution']}")
-        
-        return self.data
-    
-    def perform_eda(self, save_plots: bool = True) -> Dict[str, Any]:
-        """
-        Perform exploratory data analysis.
-        
-        Args:
-            save_plots (bool): Whether to save EDA plots
-            
-        Returns:
-            Dict[str, Any]: EDA results
-        """
-        logger.info("=" * 60)
-        logger.info("STEP 2: EXPLORATORY DATA ANALYSIS")
-        logger.info("=" * 60)
-        
-        if self.data is None:
-            raise ValueError("Data must be loaded first")
-        
-        # Perform comprehensive EDA
-        eda_results = perform_comprehensive_eda(
-            self.data['Sentence'], 
-            self.data['Sentiment'],
-            output_dir=OUTPUT_DIR if save_plots else None
+        logger.info("Generating comprehensive EDA for raw data...")
+        self.raw_eda_results = comprehensive_eda(
+            self.raw_data, 
+            output_dir=raw_eda_dir,
+            title_prefix="Raw Data"
         )
         
-        self.results['eda_results'] = eda_results
+        # Print data overview
+        self._print_data_overview(self.raw_data, "Raw Data")
         
-        logger.info("EDA completed successfully")
-        
-        return eda_results
+        return self.raw_data
     
-    def preprocess_data(self) -> Tuple[pd.Series, pd.Series]:
-        """
-        Preprocess the text data.
+    def clean_and_balance_data(self):
+        """Clean data and apply intelligent balancing."""
+        logger.info("Step 2: Cleaning and balancing data...")
         
-        Returns:
-            Tuple[pd.Series, pd.Series]: Preprocessed texts and labels
-        """
-        logger.info("=" * 60)
-        logger.info("STEP 3: TEXT PREPROCESSING")
-        logger.info("=" * 60)
+        # Initial cleaning
+        self.cleaned_data = clean_initial_data(self.raw_data)
         
-        if self.data is None:
-            raise ValueError("Data must be loaded first")
+        # Apply intelligent balancing
+        self.balanced_data = self._balance_dataset(self.cleaned_data)
         
-        # Initialize preprocessor
-        self.preprocessor = TextPreprocessor(self.config['preprocessing'])
+        # Generate balanced data EDA
+        balanced_eda_dir = os.path.join(OUTPUT_DIR, 'balanced_data_analysis')
+        os.makedirs(balanced_eda_dir, exist_ok=True)
         
-        # Preprocess texts
-        logger.info("Preprocessing text data...")
-        processed_texts = self.preprocessor.preprocess_texts(self.data['Sentence'])
+        logger.info("Generating EDA for balanced data...")
+        self.balanced_eda_results = comprehensive_eda(
+            self.balanced_data,
+            output_dir=balanced_eda_dir,
+            title_prefix="Balanced Data"
+        )
         
-        # Store preprocessing results
-        self.results['preprocessing_results'] = {
-            'original_texts_count': len(self.data['Sentence']),
-            'processed_texts_count': len(processed_texts),
-            'average_length_before': self.data['Sentence'].str.len().mean(),
-            'average_length_after': pd.Series(processed_texts).str.len().mean(),
-            'preprocessing_config': self.config['preprocessing']
+        # Print balancing results
+        self._print_data_overview(self.balanced_data, "Balanced Data")
+        
+        return self.balanced_data
+    
+    def preprocess_data(self):
+        """Apply enhanced preprocessing with before/after comparison."""
+        logger.info("Step 3: Enhanced text preprocessing...")
+        
+        # Create preprocessor with optimized config
+        preprocessing_config = {
+            'lowercase': True,
+            'remove_punctuation': False,  # Keep financial punctuation
+            'remove_numbers': False,      # Keep numbers for financial context
+            'normalize_tickers': True,
+            'remove_stopwords': True,
+            'min_length': 3,
+            'max_length': 1000
         }
         
-        logger.info("Text preprocessing completed")
-        logger.info(f"Average length before: {self.results['preprocessing_results']['average_length_before']:.1f}")
-        logger.info(f"Average length after: {self.results['preprocessing_results']['average_length_after']:.1f}")
+        preprocessor = TextPreprocessor(preprocessing_config)
         
-        return pd.Series(processed_texts), self.data['Sentiment']
+        # Get original texts
+        original_texts = self.balanced_data['Sentence'].tolist()
+        
+        # Apply preprocessing
+        processed_texts = preprocessor.preprocess_texts(original_texts)
+        
+        # Create processed dataset
+        self.processed_data = self.balanced_data.copy()
+        self.processed_data['Processed_Sentence'] = processed_texts
+        self.processed_data['Original_Length'] = self.processed_data['Sentence'].str.len()
+        self.processed_data['Processed_Length'] = self.processed_data['Processed_Sentence'].str.len()
+        self.processed_data['Length_Reduction'] = (
+            self.processed_data['Original_Length'] - self.processed_data['Processed_Length']
+        ) / self.processed_data['Original_Length']
+        
+        # Generate preprocessing comparison plots
+        self._generate_preprocessing_comparison()
+        
+        # Filter out empty processed texts
+        self.processed_data = self.processed_data[
+            self.processed_data['Processed_Sentence'].str.len() > 0
+        ].reset_index(drop=True)
+        
+        # Save processed dataset for training
+        train_dataset_path = os.path.join(DATA_DIR, 'train_dataset.csv')
+        self.processed_data.to_csv(train_dataset_path, index=False)
+        logger.info(f"Processed training dataset saved to: {train_dataset_path}")
+        
+        # Print preprocessing stats
+        self._print_preprocessing_stats()
+        
+        return self.processed_data
     
-    def extract_features(self, texts: pd.Series, labels: pd.Series) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Extract features using vectorization.
+    def train_and_evaluate_model(self):
+        """Train and comprehensively evaluate the model."""
+        logger.info("Step 4: Model training and evaluation...")
         
-        Args:
-            texts (pd.Series): Preprocessed texts
-            labels (pd.Series): Labels
-            
-        Returns:
-            Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: Train/test splits
-        """
-        logger.info("=" * 60)
-        logger.info("STEP 4: FEATURE EXTRACTION")
-        logger.info("=" * 60)
+        # Prepare features and labels
+        X_text = self.processed_data['Processed_Sentence']
+        y = self.processed_data['Sentiment']
         
-        # Initialize vectorizer
+        # Create vectorizer
+        vectorizer_config = {
+            'vectorizer_type': self.config.get('vectorizer_type', 'tfidf'),
+            'max_features': self.config.get('max_features', 10000),
+            'ngram_range': self.config.get('ngram_range', (1, 2)),
+            'min_df': self.config.get('min_df', 2),
+            'max_df': self.config.get('max_df', 0.95)
+        }
+        
         self.vectorizer = create_feature_extractor(
-            vectorizer_type=self.config['vectorizer']['vectorizer_type'],
-            config=self.config['vectorizer']
+            vectorizer_config['vectorizer_type'],
+            vectorizer_config
         )
         
-        # Split data first
+        # Transform texts to features
+        X = self.vectorizer.fit_transform(X_text)
+        
+        # Split data
+        test_size = self.config.get('test_size', 0.2)
+        random_state = self.config.get('random_state', 42)
+        
         from sklearn.model_selection import train_test_split
-        
-        # Check if we have enough samples for stratification
-        min_class_count = labels.value_counts().min()
-        use_stratify = self.config['model']['stratify'] and min_class_count >= 2
-        
-        if not use_stratify:
-            logger.warning("Disabling stratification due to insufficient samples in some classes")
-        
-        X_train_text, X_test_text, y_train, y_test = train_test_split(
-            texts, labels,
-            test_size=self.config['model']['test_size'],
-            random_state=self.config['model']['random_state'],
-            stratify=labels if use_stratify else None
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=test_size, random_state=random_state, stratify=y
         )
-        
-        # Fit vectorizer on training data and transform both sets
-        logger.info("Fitting vectorizer on training data...")
-        X_train = self.vectorizer.fit_transform(X_train_text)
-        
-        logger.info("Transforming test data...")
-        X_test = self.vectorizer.transform(X_test_text)
-        
-        # Store feature extraction results
-        self.results['feature_extraction_results'] = {
-            'vectorizer_type': self.config['vectorizer']['vectorizer_type'],
-            'vocabulary_size': len(self.vectorizer.get_feature_names()),
-            'feature_matrix_shape': X_train.shape,
-            'train_test_split': {
-                'train_size': X_train.shape[0],
-                'test_size': X_test.shape[0],
-                'test_ratio': self.config['model']['test_size']
-            },
-            'vectorizer_config': self.config['vectorizer']
-        }
-        
-        logger.info("Feature extraction completed")
-        logger.info(f"Training set: {X_train.shape}")
-        logger.info(f"Test set: {X_test.shape}")
-        logger.info(f"Vocabulary size: {self.results['feature_extraction_results']['vocabulary_size']}")
-        
-        return X_train, X_test, y_train, y_test
-    
-    def train_model(self, X_train: np.ndarray, X_test: np.ndarray, 
-                   y_train: np.ndarray, y_test: np.ndarray) -> Dict[str, Any]:
-        """
-        Train and evaluate the sentiment classification model.
-        
-        Args:
-            X_train (np.ndarray): Training features
-            X_test (np.ndarray): Test features
-            y_train (np.ndarray): Training labels
-            y_test (np.ndarray): Test labels
-            
-        Returns:
-            Dict[str, Any]: Model results
-        """
-        logger.info("=" * 60)
-        logger.info("STEP 5: MODEL TRAINING")
-        logger.info("=" * 60)
         
         # Train model
-        self.model, evaluation_results = train_and_evaluate_model(
-            X_train, X_test, y_train, y_test, self.config['model']
-        )
-        
-        # Store model results
-        self.results['model_results'] = {
-            'model_type': 'MultinomialNB',
-            'model_config': self.config['model'],
-            'training_accuracy': evaluation_results.get('training_accuracy'),
-            'test_accuracy': evaluation_results['accuracy'],
-            'cross_validation': evaluation_results.get('cross_validation'),
-            'model_info': self.model.get_model_info()
+        model_config = {
+            'alpha': self.config.get('alpha', 1.0),
+            'fit_prior': self.config.get('fit_prior', True)
         }
         
-        logger.info("Model training completed")
-        logger.info(f"Test accuracy: {evaluation_results['accuracy']:.4f}")
-        
-        return evaluation_results
-    
-    def evaluate_model(self, X_test: np.ndarray, y_test: np.ndarray, 
-                      class_names: list = None) -> Dict[str, Any]:
-        """
-        Comprehensive model evaluation.
-        
-        Args:
-            X_test (np.ndarray): Test features
-            y_test (np.ndarray): Test labels
-            class_names (list, optional): Class names
-            
-        Returns:
-            Dict[str, Any]: Evaluation results
-        """
-        logger.info("=" * 60)
-        logger.info("STEP 6: MODEL EVALUATION")
-        logger.info("=" * 60)
-        
-        if self.model is None:
-            raise ValueError("Model must be trained first")
-        
-        # Initialize evaluator
-        self.evaluator = ModelEvaluator(OUTPUT_DIR)
-        
-        # Make predictions
-        y_pred = self.model.predict(X_test)
-        y_proba = self.model.predict_proba(X_test)
+        self.model, self.results = train_and_evaluate_model(
+            X_train, X_test, y_train, y_test, model_config
+        )
         
         # Comprehensive evaluation
-        from utils.evaluator import evaluate_model_comprehensive
-        
-        evaluation_results = evaluate_model_comprehensive(
-            y_test, y_pred, y_proba, class_names, "NaiveBayes_FinancialSentiment", OUTPUT_DIR
-        )
-        
-        # Get feature importance
-        if hasattr(self.vectorizer, 'get_feature_names'):
-            feature_names = self.vectorizer.get_feature_names()
-            feature_importance = self.model.get_feature_importance(feature_names, top_n=20)
-            evaluation_results['feature_importance'] = feature_importance
-        
-        self.results['evaluation_results'] = evaluation_results
-        
-        logger.info("Model evaluation completed")
-        logger.info(f"Final accuracy: {evaluation_results['metrics']['accuracy']:.4f}")
-        
-        return evaluation_results
-    
-    def save_models(self) -> Dict[str, str]:
-        """
-        Save trained models and vectorizer.
-        
-        Returns:
-            Dict[str, str]: Paths where models were saved
-        """
-        logger.info("=" * 60)
-        logger.info("STEP 7: SAVING MODELS")
-        logger.info("=" * 60)
-        
-        if self.model is None or self.vectorizer is None:
-            raise ValueError("Models must be trained first")
-        
-        # Save model
-        self.model.save_model(MODEL_PATH)
-        
-        # Save vectorizer
-        self.vectorizer.save_vectorizer(VECTORIZER_PATH)
-        
-        saved_paths = {
-            'model': MODEL_PATH,
-            'vectorizer': VECTORIZER_PATH
-        }
-        
-        logger.info("Models saved successfully")
-        for component, path in saved_paths.items():
-            logger.info(f"{component.capitalize()}: {path}")
-        
-        return saved_paths
-    
-    def generate_final_report(self) -> str:
-        """
-        Generate a comprehensive final report.
-        
-        Returns:
-            str: Path to the final report
-        """
-        logger.info("=" * 60)
-        logger.info("STEP 8: GENERATING FINAL REPORT")
-        logger.info("=" * 60)
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_path = os.path.join(OUTPUT_DIR, f"final_report_{timestamp}.txt")
-        
-        with open(report_path, 'w') as f:
-            f.write("=" * 80 + "\n")
-            f.write("FINANCIAL SENTIMENT ANALYSIS - FINAL REPORT\n")
-            f.write("=" * 80 + "\n\n")
-            
-            f.write(f"Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-            
-            # Data information
-            f.write("1. DATASET INFORMATION:\n")
-            f.write("-" * 30 + "\n")
-            data_info = self.results.get('data_info', {})
-            f.write(f"Shape: {data_info.get('shape', 'N/A')}\n")
-            f.write(f"Columns: {data_info.get('columns', 'N/A')}\n")
-            f.write(f"Class Distribution: {data_info.get('class_distribution', 'N/A')}\n")
-            f.write(f"Null Values: {data_info.get('null_values', 'N/A')}\n\n")
-            
-            # Preprocessing information
-            f.write("2. PREPROCESSING RESULTS:\n")
-            f.write("-" * 30 + "\n")
-            prep_info = self.results.get('preprocessing_results', {})
-            f.write(f"Original texts: {prep_info.get('original_texts_count', 'N/A')}\n")
-            f.write(f"Processed texts: {prep_info.get('processed_texts_count', 'N/A')}\n")
-            f.write(f"Avg length before: {prep_info.get('average_length_before', 'N/A'):.1f}\n")
-            f.write(f"Avg length after: {prep_info.get('average_length_after', 'N/A'):.1f}\n\n")
-            
-            # Feature extraction
-            f.write("3. FEATURE EXTRACTION:\n")
-            f.write("-" * 30 + "\n")
-            feat_info = self.results.get('feature_extraction_results', {})
-            f.write(f"Vectorizer: {feat_info.get('vectorizer_type', 'N/A')}\n")
-            f.write(f"Vocabulary size: {feat_info.get('vocabulary_size', 'N/A')}\n")
-            f.write(f"Feature matrix shape: {feat_info.get('feature_matrix_shape', 'N/A')}\n\n")
-            
-            # Model results
-            f.write("4. MODEL PERFORMANCE:\n")
-            f.write("-" * 30 + "\n")
-            if 'evaluation_results' in self.results and 'metrics' in self.results['evaluation_results']:
-                metrics = self.results['evaluation_results']['metrics']
-                f.write(f"Accuracy: {metrics.get('accuracy', 'N/A'):.4f}\n")
-                f.write(f"Precision (macro): {metrics.get('precision_macro', 'N/A'):.4f}\n")
-                f.write(f"Recall (macro): {metrics.get('recall_macro', 'N/A'):.4f}\n")
-                f.write(f"F1-Score (macro): {metrics.get('f1_macro', 'N/A'):.4f}\n")
-            
-            # Cross-validation
-            if 'model_results' in self.results and 'cross_validation' in self.results['model_results']:
-                cv = self.results['model_results']['cross_validation']
-                f.write(f"CV Mean Score: {cv.get('mean_score', 'N/A'):.4f}\n")
-                f.write(f"CV Std Score: {cv.get('std_score', 'N/A'):.4f}\n")
-            
-            f.write("\n" + "=" * 80 + "\n")
-        
-        logger.info(f"Final report saved to: {report_path}")
-        return report_path
-    
-    def run_full_pipeline(self, dataset_path: str = DATASET_PATH, 
-                         save_models: bool = True, 
-                         generate_report: bool = True) -> Dict[str, Any]:
-        """
-        Run the complete sentiment analysis pipeline.
-        
-        Args:
-            dataset_path (str): Path to the dataset
-            save_models (bool): Whether to save trained models
-            generate_report (bool): Whether to generate final report
-            
-        Returns:
-            Dict[str, Any]: Complete pipeline results
-        """
-        start_time = datetime.now()
-        
-        logger.info("*" * 80)
-        logger.info("STARTING FINANCIAL SENTIMENT ANALYSIS PIPELINE")
-        logger.info("*" * 80)
+        evaluator = ModelEvaluator()
+        evaluation_dir = os.path.join(OUTPUT_DIR, 'model_evaluation')
+        os.makedirs(evaluation_dir, exist_ok=True)
         
         try:
-            # Step 1: Load data
-            self.load_data(dataset_path)
-            
-            # Step 2: EDA
-            self.perform_eda()
-            
-            # Step 3: Preprocess
-            processed_texts, labels = self.preprocess_data()
-            
-            # Step 4: Feature extraction
-            X_train, X_test, y_train, y_test = self.extract_features(processed_texts, labels)
-            
-            # Step 5: Train model
-            self.train_model(X_train, X_test, y_train, y_test)
-            
-            # Step 6: Evaluate model
-            class_names = sorted(labels.unique())
-            self.evaluate_model(X_test, y_test, class_names)
-            
-            # Step 7: Save models
-            if save_models:
-                self.save_models()
-            
-            # Step 8: Generate report
-            if generate_report:
-                self.generate_final_report()
-            
-            end_time = datetime.now()
-            duration = end_time - start_time
-            
-            logger.info("*" * 80)
-            logger.info("PIPELINE COMPLETED SUCCESSFULLY")
-            logger.info(f"Total execution time: {duration}")
-            logger.info("*" * 80)
-            
-            return {
-                'status': 'success',
-                'execution_time': duration,
-                'results': self.results
-            }
-            
+            evaluation_results = evaluator.comprehensive_evaluation(
+                self.model, X_test, y_test, output_dir=evaluation_dir
+            )
+            self.results.update(evaluation_results)
         except Exception as e:
-            logger.error(f"Pipeline failed: {str(e)}")
-            return {
-                'status': 'failed',
-                'error': str(e),
-                'results': self.results
-            }
+            logger.warning(f"Comprehensive evaluation failed: {e}. Using basic results.")
+            # Use basic results if comprehensive evaluation fails
+        
+        # Save model and vectorizer
+        self._save_models()
+        
+        # Print results
+        self._print_results()
+        
+        return self.results
+    
+    def _balance_dataset(self, df):
+        """Apply intelligent dataset balancing."""
+        logger.info("Applying intelligent dataset balancing...")
+        
+        # Get class distribution
+        class_counts = df['Sentiment'].value_counts()
+        logger.info(f"Original distribution: {dict(class_counts)}")
+        
+        # Strategy: Undersample majority class (neutral) to reduce dominance
+        # but not too aggressively to maintain information
+        neutral_count = class_counts.get('neutral', 0)
+        positive_count = class_counts.get('positive', 0)
+        negative_count = class_counts.get('negative', 0)
+        
+        # Target: Make neutral class no more than 1.5x the largest minority class
+        max_minority = max(positive_count, negative_count)
+        target_neutral = min(neutral_count, int(max_minority * 1.5))
+        
+        # Undersample neutral class
+        neutral_samples = df[df['Sentiment'] == 'neutral'].sample(
+            n=target_neutral, random_state=42
+        )
+        
+        # Keep all positive and negative samples
+        positive_samples = df[df['Sentiment'] == 'positive']
+        negative_samples = df[df['Sentiment'] == 'negative']
+        
+        # Combine balanced dataset
+        balanced_df = pd.concat([
+            positive_samples,
+            negative_samples,
+            neutral_samples
+        ]).sample(frac=1, random_state=42).reset_index(drop=True)
+        
+        new_counts = balanced_df['Sentiment'].value_counts()
+        logger.info(f"Balanced distribution: {dict(new_counts)}")
+        
+        return balanced_df
+    
+    def _generate_preprocessing_comparison(self):
+        """Generate before/after preprocessing comparison plots."""
+        comparison_dir = os.path.join(OUTPUT_DIR, 'preprocessing_comparison')
+        os.makedirs(comparison_dir, exist_ok=True)
+        
+        generate_comparison_plots(
+            self.processed_data,
+            comparison_dir,
+            original_col='Sentence',
+            processed_col='Processed_Sentence'
+        )
+    
+    def _save_models(self):
+        """Save trained models."""
+        import joblib
+        
+        # Save model
+        model_path = os.path.join(MODELS_DIR, 'naive_bayes_model.pkl')
+        joblib.dump(self.model, model_path)
+        
+        # Save vectorizer
+        vectorizer_path = os.path.join(MODELS_DIR, 'vectorizer.pkl')
+        joblib.dump(self.vectorizer, vectorizer_path)
+        
+        logger.info(f"Models saved to {MODELS_DIR}")
+    
+    def _print_data_overview(self, df, title):
+        """Print data overview."""
+        print(f"\n{'='*60}")
+        print(f"{title.upper()} OVERVIEW")
+        print(f"{'='*60}")
+        print(f"Total samples: {len(df)}")
+        print(f"Columns: {list(df.columns)}")
+        print("\nClass distribution:")
+        class_counts = df['Sentiment'].value_counts()
+        for sentiment, count in class_counts.items():
+            percentage = (count / len(df)) * 100
+            print(f"  {sentiment}: {count} samples ({percentage:.1f}%)")
+    
+    def _print_preprocessing_stats(self):
+        """Print preprocessing statistics."""
+        print(f"\n{'='*60}")
+        print("PREPROCESSING STATISTICS")
+        print(f"{'='*60}")
+        
+        avg_original = self.processed_data['Original_Length'].mean()
+        avg_processed = self.processed_data['Processed_Length'].mean()
+        avg_reduction = self.processed_data['Length_Reduction'].mean()
+        
+        print(f"Average original length: {avg_original:.1f} characters")
+        print(f"Average processed length: {avg_processed:.1f} characters")
+        print(f"Average length reduction: {avg_reduction:.1%}")
+        print(f"Samples ready for training: {len(self.processed_data)}")
+    
+    def _print_results(self):
+        """Print final results."""
+        print(f"\n{'='*60}")
+        print("FINAL MODEL RESULTS")
+        print(f"{'='*60}")
+        print(f"Test Accuracy: {self.results.get('accuracy', 0):.4f}")
+        print(f"Precision: {self.results.get('precision', 0):.4f}")
+        print(f"Recall: {self.results.get('recall', 0):.4f}")
+        print(f"F1-Score: {self.results.get('f1_score', 0):.4f}")
+        
+        if 'cv_scores' in self.results:
+            cv_mean = np.mean(self.results['cv_scores'])
+            cv_std = np.std(self.results['cv_scores'])
+            print(f"Cross-validation: {cv_mean:.4f} ± {cv_std:.4f}")
 
 
 def main():
-    """Main function with command line interface."""
-    parser = argparse.ArgumentParser(description='Financial Sentiment Analysis Pipeline')
-    
-    parser.add_argument('--data', type=str, default=DATASET_PATH,
-                       help='Path to the dataset CSV file')
-    parser.add_argument('--no-save', action='store_true',
-                       help='Do not save trained models')
-    parser.add_argument('--no-report', action='store_true',
-                       help='Do not generate final report')
-    parser.add_argument('--config', type=str,
-                       help='Path to JSON config file for overrides')
-    parser.add_argument('--alpha', type=float, default=1.0,
-                       help='Naive Bayes alpha parameter')
-    parser.add_argument('--vectorizer', choices=['tfidf', 'count'], default='tfidf',
-                       help='Type of vectorizer to use')
-    parser.add_argument('--max-features', type=int, default=10000,
-                       help='Maximum number of features for vectorizer')
+    """Main execution function."""
+    parser = argparse.ArgumentParser(description='Enhanced Financial Sentiment Analysis ML Pipeline')
+    parser.add_argument('--dataset', type=str, default=DATASET_PATH, help='Path to dataset')
+    parser.add_argument('--alpha', type=float, default=1.0, help='Naive Bayes smoothing parameter')
+    parser.add_argument('--max-features', type=int, default=10000, help='Maximum features for vectorizer')
+    parser.add_argument('--vectorizer', choices=['tfidf', 'count'], default='tfidf', help='Vectorizer type')
+    parser.add_argument('--test-size', type=float, default=0.2, help='Test set size')
     
     args = parser.parse_args()
     
-    # Prepare configuration overrides
-    config_overrides = {
-        'model': {'alpha': args.alpha},
-        'vectorizer': {
-            'vectorizer_type': args.vectorizer,
-            'max_features': args.max_features
-        }
+    # Configuration
+    config = {
+        'alpha': args.alpha,
+        'max_features': args.max_features,
+        'vectorizer_type': args.vectorizer,
+        'test_size': args.test_size,
+        'ngram_range': (1, 2),
+        'min_df': 2,
+        'max_df': 0.95,
+        'random_state': 42,
+        'fit_prior': True
     }
     
-    # Load additional config if provided
-    if args.config:
-        import json
-        with open(args.config, 'r') as f:
-            additional_config = json.load(f)
-            for section, overrides in additional_config.items():
-                if section in config_overrides:
-                    config_overrides[section].update(overrides)
-                else:
-                    config_overrides[section] = overrides
+    print("="*80)
+    print("ENHANCED FINANCIAL SENTIMENT ANALYSIS ML PIPELINE")
+    print("="*80)
+    print(f"Dataset: {args.dataset}")
+    print(f"Configuration: {config}")
+    print("="*80)
     
-    # Initialize and run pipeline
-    pipeline = SentimentAnalysisPipeline(config_overrides)
+    # Run pipeline
+    pipeline = EnhancedMLPipeline(config)
     
-    results = pipeline.run_full_pipeline(
-        dataset_path=args.data,
-        save_models=not args.no_save,
-        generate_report=not args.no_report
-    )
-    
-    if results['status'] == 'success':
-        print(f"\n✅ Pipeline completed successfully in {results['execution_time']}")
-        if 'evaluation_results' in results['results']:
-            accuracy = results['results']['evaluation_results']['metrics']['accuracy']
-            print(f"📊 Final model accuracy: {accuracy:.4f}")
-    else:
-        print(f"\n❌ Pipeline failed: {results['error']}")
+    try:
+        # Execute pipeline steps
+        pipeline.load_and_analyze_data(args.dataset)
+        pipeline.clean_and_balance_data()
+        pipeline.preprocess_data()
+        pipeline.train_and_evaluate_model()
+        
+        print("\n" + "="*80)
+        print("PIPELINE COMPLETED SUCCESSFULLY!")
+        print("="*80)
+        print(f"Results saved to: {OUTPUT_DIR}")
+        print(f"Models saved to: {MODELS_DIR}")
+        print(f"Training dataset: {os.path.join(DATA_DIR, 'train_dataset.csv')}")
+        
+    except Exception as e:
+        logger.error(f"Pipeline failed: {str(e)}")
         sys.exit(1)
 
 

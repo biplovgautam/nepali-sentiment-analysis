@@ -1,0 +1,140 @@
+{% extends 'sentiment/base.html' %}
+
+{% block title %}Dataset Analysis - Financial Sentiment Analysis{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-chart-bar"></i> Dataset Analysis</h1>
+    <p class="lead">Explore the class distribution and word patterns in your dataset.</p>
+</div>
+
+<!-- Dataset Info -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Dataset Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ dataset_info.shape.0 }}</div>
+                            <div class="metric-label">Total Samples</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="metric-value">{{ dataset_info.shape.1 }}</div>
+                            <div class="metric-label">Columns</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="metric-value">{{ dataset_info.class_distribution|length }}</div>
+                            <div class="metric-label">Classes</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="metric-value">{{ dataset_file }}</div>
+                            <div class="metric-label">Dataset File</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Class Distribution:</h6>
+                    <ul class="list-inline">
+                        {% for class, count in dataset_info.class_distribution.items %}
+                        <li class="list-inline-item">
+                            <span class="badge bg-secondary fs-6">{{ class }}: {{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Class Distribution Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-chart-pie"></i> Class Distribution Visualization</h5>
+            </div>
+            <div class="card-body">
+                {% if class_dist_chart %}
+                    <div class="visualization-container">
+                        <img src="data:image/png;base64,{{ class_dist_chart }}" alt="Class Distribution Chart" class="img-fluid">
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Unable to generate class distribution chart.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Word Clouds -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-cloud"></i> Top Words by Sentiment Class</h5>
+            </div>
+            <div class="card-body">
+                {% if wordcloud_images %}
+                    <div class="row">
+                        {% for sentiment, image in wordcloud_images.items %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-header text-center">
+                                    <h6 class="mb-0">{{ sentiment|title }} Sentiment</h6>
+                                </div>
+                                <div class="card-body p-2">
+                                    <div class="visualization-container">
+                                        <img src="data:image/png;base64,{{ image }}" alt="{{ sentiment }} word cloud" class="img-fluid">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Unable to generate word clouds.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Next Steps -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-arrow-right"></i> Next Steps</h5>
+            </div>
+            <div class="card-body">
+                <p>Now that you've analyzed your dataset, you can proceed to filter the data by selecting the number of samples per class.</p>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'dataset_upload' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Upload
+                    </a>
+                    <a href="{% url 'dataset_filter' %}" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Filter Dataset
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

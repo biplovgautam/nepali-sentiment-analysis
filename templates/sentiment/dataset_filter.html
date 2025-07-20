@@ -1,0 +1,188 @@
+{% extends 'sentiment/base.html' %}
+
+{% block title %}Filter Dataset - Financial Sentiment Analysis{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-filter"></i> Filter Dataset</h1>
+    <p class="lead">Choose the number of samples per class to create a balanced dataset for training.</p>
+</div>
+
+<div class="row">
+    <!-- Current Dataset Info -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-database"></i> Current Dataset</h5>
+            </div>
+            <div class="card-body">
+                <h6>Available Samples:</h6>
+                <ul class="list-unstyled">
+                    {% for class, count in dataset_info.class_distribution.items %}
+                    <li class="mb-2">
+                        <span class="badge bg-primary">{{ class }}</span>
+                        <span class="ms-2">{{ count }} samples</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Total:</strong> {{ dataset_info.shape.0 }} samples
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-sliders-h"></i> Filter Configuration</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.positive_samples.id_for_label }}" class="form-label">
+                                <i class="fas fa-thumbs-up text-success"></i> {{ form.positive_samples.label }}
+                            </label>
+                            {{ form.positive_samples }}
+                            <div class="form-text">{{ form.positive_samples.help_text }}</div>
+                            {% if form.positive_samples.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.positive_samples.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.negative_samples.id_for_label }}" class="form-label">
+                                <i class="fas fa-thumbs-down text-danger"></i> {{ form.negative_samples.label }}
+                            </label>
+                            {{ form.negative_samples }}
+                            <div class="form-text">{{ form.negative_samples.help_text }}</div>
+                            {% if form.negative_samples.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.negative_samples.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.neutral_samples.id_for_label }}" class="form-label">
+                                <i class="fas fa-minus text-warning"></i> {{ form.neutral_samples.label }}
+                            </label>
+                            {{ form.neutral_samples }}
+                            <div class="form-text">{{ form.neutral_samples.help_text }}</div>
+                            {% if form.neutral_samples.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.neutral_samples.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'dataset_analysis' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Analysis
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Apply Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtering Tips -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="card-title mb-0"><i class="fas fa-lightbulb"></i> Filtering Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-balance-scale text-success"></i> Balanced Dataset Benefits:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Prevents model bias towards dominant classes</li>
+                            <li><i class="fas fa-check text-success"></i> Improves overall model performance</li>
+                            <li><i class="fas fa-check text-success"></i> More reliable evaluation metrics</li>
+                            <li><i class="fas fa-check text-success"></i> Better generalization to new data</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-cogs text-info"></i> Recommendations:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-info-circle text-info"></i> Use equal samples per class when possible</li>
+                            <li><i class="fas fa-info-circle text-info"></i> Minimum 50-100 samples per class for training</li>
+                            <li><i class="fas fa-info-circle text-info"></i> Consider your computational resources</li>
+                            <li><i class="fas fa-info-circle text-info"></i> More data generally leads to better models</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Note:</strong> After filtering, the system will randomly sample the specified number of instances from each class to create a balanced dataset for training.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+
+    // Real-time total calculation
+    function updateTotal() {
+        const positive = parseInt(document.getElementById('{{ form.positive_samples.id_for_label }}').value) || 0;
+        const negative = parseInt(document.getElementById('{{ form.negative_samples.id_for_label }}').value) || 0;
+        const neutral = parseInt(document.getElementById('{{ form.neutral_samples.id_for_label }}').value) || 0;
+        
+        const total = positive + negative + neutral;
+        
+        // You could add a total display element here if needed
+        console.log('Total filtered samples:', total);
+    }
+
+    // Add event listeners to all number inputs
+    ['{{ form.positive_samples.id_for_label }}', '{{ form.negative_samples.id_for_label }}', '{{ form.neutral_samples.id_for_label }}'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateTotal);
+    });
+</script>
+{% endblock %}

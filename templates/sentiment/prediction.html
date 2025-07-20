@@ -1,0 +1,323 @@
+{% extends 'sentiment/base.html' %}
+
+{% block title %}Sentiment Prediction - Financial Sentiment Analysis{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-brain"></i> Sentiment Prediction Interface</h1>
+    <p class="lead">Test your trained model by entering financial text and getting real-time sentiment predictions.</p>
+</div>
+
+<!-- Model Status -->
+<div class="row mb-4">
+    <div class="col-12">
+        {% if prediction_result %}
+            <!-- Prediction Results -->
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-check-circle"></i> Prediction Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>Input Text:</h6>
+                            <div class="alert alert-light border">
+                                <em>"{{ input_text }}"</em>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <div class="metric-value">{{ prediction_result.prediction|title }}</div>
+                                <div class="metric-label">Predicted Sentiment</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-3">Confidence Scores:</h6>
+                    <div class="row">
+                        {% for class, probability in prediction_result.probabilities.items %}
+                        <div class="col-md-4 mb-2">
+                            <div class="card {% if class == prediction_result.prediction %}border-success{% endif %}">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">{{ class|title }}</h6>
+                                    <div class="progress mb-2">
+                                        {% with prob_percent=probability|floatformat:0 %}
+                                        <div class="progress-bar {% if class == 'positive' %}bg-success{% elif class == 'negative' %}bg-danger{% else %}bg-warning{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ prob_percent }}%" 
+                                             aria-valuenow="{{ prob_percent }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                        {% endwith %}
+                                    </div>
+                                    <span class="badge 
+                                        {% if class == prediction_result.prediction %}bg-primary
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ probability|floatformat:3 }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-3">
+                        <strong>Overall Confidence:</strong> 
+                        <span class="badge bg-primary fs-6">{{ prediction_result.confidence|floatformat:1 }}%</span>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Model Status Card -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Model Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-robot"></i> 
+                        Naive Bayes sentiment analysis model is ready for predictions.
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Prediction Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-edit"></i> Enter Text for Sentiment Analysis</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation no-loading" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.text_input.id_for_label }}" class="form-label">
+                            <i class="fas fa-comment"></i> {{ form.text_input.label }}
+                        </label>
+                        {{ form.text_input }}
+                        <div class="form-text">{{ form.text_input.help_text }}</div>
+                        {% if form.text_input.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.text_input.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                            <i class="fas fa-eraser"></i> Clear
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="addSampleText()">
+                            <i class="fas fa-magic"></i> Try Sample
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Analyze Sentiment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Texts -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-examples"></i> Sample Financial Texts</h5>
+            </div>
+            <div class="card-body">
+                <p>Click on any sample text to try it out:</p>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card sample-card" onclick="setSampleText(this)">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-thumbs-up"></i> Positive Example</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text" data-text="Apple stock is soaring to new heights today with excellent quarterly earnings beating all analyst expectations and showing strong growth in iPhone and services revenue.">
+                                    Apple stock is soaring to new heights today with excellent quarterly earnings...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card sample-card" onclick="setSampleText(this)">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0"><i class="fas fa-thumbs-down"></i> Negative Example</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text" data-text="Tesla stock crashed dramatically today following disappointing delivery numbers and concerns about production delays affecting the company's growth targets.">
+                                    Tesla stock crashed dramatically today following disappointing delivery numbers...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card sample-card" onclick="setSampleText(this)">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="fas fa-minus"></i> Neutral Example</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text" data-text="Microsoft announced its quarterly earnings today with revenue figures in line with market expectations and no significant changes to forward guidance.">
+                                    Microsoft announced its quarterly earnings today with revenue figures in line...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Information -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-code"></i> API Endpoints</h5>
+            </div>
+            <div class="card-body">
+                <p>For programmatic access, use these REST API endpoints:</p>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-single"></i> Single Prediction API</h6>
+                        <div class="code-block">
+                            <code>POST {% url 'predict_api' %}</code>
+                        </div>
+                        <p class="small text-muted">
+                            Send JSON: <code>{"text": "Your text here"}</code>
+                        </p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-list"></i> Batch Prediction API</h6>
+                        <div class="code-block">
+                            <code>POST {% url 'predict_batch_api' %}</code>
+                        </div>
+                        <p class="small text-muted">
+                            Send JSON: <code>{"texts": ["Text 1", "Text 2"]}</code>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Note:</strong> API endpoints return JSON responses with prediction results and confidence scores.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sample-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .sample-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    .code-block {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-family: monospace;
+        margin: 5px 0;
+    }
+    
+    .progress {
+        height: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+
+    // Clear form function
+    function clearForm() {
+        document.getElementById('{{ form.text_input.id_for_label }}').value = '';
+        document.querySelector('form').classList.remove('was-validated');
+    }
+
+    // Add sample text function
+    function addSampleText() {
+        const sampleTexts = [
+            "Amazon stock surged 15% today following better-than-expected quarterly results and strong guidance for the upcoming holiday season.",
+            "Bank of America shares declined sharply after the Federal Reserve announced stricter banking regulations and capital requirements.",
+            "Google parent company Alphabet reported quarterly earnings that met analyst expectations with steady growth in advertising revenue."
+        ];
+        
+        const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+        document.getElementById('{{ form.text_input.id_for_label }}').value = randomText;
+    }
+
+    // Set sample text from cards
+    function setSampleText(card) {
+        const text = card.querySelector('[data-text]').getAttribute('data-text');
+        document.getElementById('{{ form.text_input.id_for_label }}').value = text;
+        
+        // Scroll to form
+        document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Character counter
+    const textInput = document.getElementById('{{ form.text_input.id_for_label }}');
+    if (textInput) {
+        textInput.addEventListener('input', function() {
+            const length = this.value.length;
+            const maxLength = 1000;
+            
+            // You could add a character counter display here
+            if (length > maxLength * 0.9) {
+                console.log(`Warning: ${length}/${maxLength} characters`);
+            }
+        });
+    }
+</script>
+{% endblock %}

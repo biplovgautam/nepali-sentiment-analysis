@@ -108,7 +108,8 @@ class TextPreprocessor:
         if not text or pd.isna(text):
             return ""
         
-        if not self.config['normalize_tickers']:
+        # Use get() method with default value to handle missing config keys
+        if not self.config.get('normalize_tickers', True):
             return text
         
         for pattern in self.ticker_patterns:
@@ -129,7 +130,7 @@ class TextPreprocessor:
         if not text or pd.isna(text):
             return ""
         
-        if not self.config['remove_punctuation']:
+        if not self.config.get('remove_punctuation', True):
             return text
         
         # Keep some financial punctuation that might be meaningful
@@ -152,7 +153,7 @@ class TextPreprocessor:
         if not text or pd.isna(text):
             return ""
         
-        if not self.config['remove_numbers']:
+        if not self.config.get('remove_numbers', True):
             return text
         
         # Replace numbers with a placeholder to maintain context
@@ -196,7 +197,7 @@ class TextPreprocessor:
         if not text or pd.isna(text):
             return ""
         
-        if not self.config['remove_stopwords']:
+        if not self.config.get('remove_stopwords', True):
             return text
         
         words = text.split()
@@ -273,7 +274,7 @@ class TextPreprocessor:
         text = self.remove_extra_whitespace(text)
         
         # Step 8: Remove stopwords (optional, might be better to do after tokenization)
-        if self.config['remove_stopwords']:
+        if self.config.get('remove_stopwords', True):
             text = self.remove_stopwords(text)
         
         # Step 9: Final whitespace cleanup

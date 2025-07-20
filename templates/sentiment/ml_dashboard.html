@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Financial Sentiment Analysis - ML Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .card-header {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+        }
+        
+        .metric-card {
+            border-left: 4px solid #007bff;
+            transition: transform 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+        }
+        
+        .performance-excellent { border-left-color: #28a745; }
+        .performance-good { border-left-color: #ffc107; }
+        .performance-poor { border-left-color: #dc3545; }
+        
+        .section-divider {
+            border-top: 3px solid #e9ecef;
+            margin: 2rem 0;
+        }
+        
+        .btn-ml {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .btn-ml:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+            color: white;
+        }
+        
+        .visualization-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-active { background-color: #28a745; }
+        .status-training { background-color: #ffc107; }
+        .status-error { background-color: #dc3545; }
+        
+        .tab-content {
+            min-height: 400px;
+        }
+        
+        .model-history-item {
+            border-left: 3px solid #007bff;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .best-model {
+            border-left-color: #28a745;
+            background-color: #f8fff9;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="gradient-bg py-4 mb-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-0">
+                        <i class="fas fa-brain me-3"></i>
+                        Enhanced Financial Sentiment Analysis
+                    </h1>
+                    <p class="mb-0 mt-2">Advanced ML Pipeline with Intelligent Data Processing</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="status-indicator status-active"></span>
+                    <small>System Active</small>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-pills mb-4" id="mainTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="prediction-tab" data-bs-toggle="pill" data-bs-target="#prediction" type="button" role="tab">
+                    <i class="fas fa-magic me-2"></i>Live Prediction & Model History
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analysis-tab" data-bs-toggle="pill" data-bs-target="#analysis" type="button" role="tab">
+                    <i class="fas fa-chart-line me-2"></i>Data Analysis & EDA
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preprocessing-tab" data-bs-toggle="pill" data-bs-target="#preprocessing" type="button" role="tab">
+                    <i class="fas fa-cogs me-2"></i>Preprocessing Comparison
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="training-tab" data-bs-toggle="pill" data-bs-target="#training" type="button" role="tab">
+                    <i class="fas fa-robot me-2"></i>Model Training & Evaluation
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="mainTabContent">
+            
+            <!-- Live Prediction & Model History Tab -->
+            <div class="tab-pane fade show active" id="prediction" role="tabpanel">
+                <div class="row">
+                    <!-- Live Prediction Section -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-magic me-2"></i>Live Sentiment Prediction</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="predictionForm">
+                                    <div class="mb-3">
+                                        <label for="textInput" class="form-label">Enter Financial Text:</label>
+                                        <textarea class="form-control" id="textInput" rows="4" placeholder="e.g., Apple stock is showing strong performance today with positive earnings..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-ml w-100">
+                                        <i class="fas fa-search me-2"></i>Analyze Sentiment
+                                    </button>
+                                </form>
+                                
+                                <div id="predictionResult" class="mt-4" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-lightbulb me-2"></i>Prediction Result:</h6>
+                                        <div id="sentimentResult"></div>
+                                        <div id="confidenceResult"></div>
+                                        <div id="probabilitiesResult"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model History Section -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Model History</h5>
+                                <button class="btn btn-light btn-sm" onclick="loadModelHistory()">
+                                    <i class="fas fa-sync me-1"></i>Refresh
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="modelHistoryContainer">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2">Loading model history...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Model Performance -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Current Model Performance</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="performanceMetrics">
+                                    <!-- Metrics will be loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Analysis Tab -->
+            <div class="tab-pane fade" id="analysis" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Raw Data Analysis</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="visualization-container">
+                                    <img src="/static/output/raw_data_analysis/class_distribution.png" class="img-fluid mb-3" alt="Raw Data Distribution">
+                                    <img src="/static/output/raw_data_analysis/text_length_analysis.png" class="img-fluid mb-3" alt="Raw Text Length Analysis">
+                                    <img src="/static/output/raw_data_analysis/word_frequency_analysis.png" class="img-fluid" alt="Raw Word Frequency">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-balance-scale me-2"></i>Balanced Data Analysis</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="visualization-container">
+                                    <img src="/static/output/balanced_data_analysis/class_distribution.png" class="img-fluid mb-3" alt="Balanced Data Distribution">
+                                    <img src="/static/output/balanced_data_analysis/text_length_analysis.png" class="img-fluid mb-3" alt="Balanced Text Length Analysis">
+                                    <img src="/static/output/balanced_data_analysis/word_frequency_analysis.png" class="img-fluid" alt="Balanced Word Frequency">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Word Clouds Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-cloud me-2"></i>Sentiment Word Clouds</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6 class="text-success">Positive Sentiment</h6>
+                                        <img src="/static/output/balanced_data_analysis/wordclouds/wordcloud_positive.png" class="img-fluid" alt="Positive Word Cloud">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="text-warning">Neutral Sentiment</h6>
+                                        <img src="/static/output/balanced_data_analysis/wordclouds/wordcloud_neutral.png" class="img-fluid" alt="Neutral Word Cloud">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="text-danger">Negative Sentiment</h6>
+                                        <img src="/static/output/balanced_data_analysis/wordclouds/wordcloud_negative.png" class="img-fluid" alt="Negative Word Cloud">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preprocessing Comparison Tab -->
+            <div class="tab-pane fade" id="preprocessing" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Before vs After Preprocessing</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="/static/output/preprocessing_comparison/preprocessing_comparison.png" class="img-fluid" alt="Preprocessing Comparison" style="max-height: 800px;">
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-file-alt me-2"></i>Preprocessing Steps</h6>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas fa-check text-success me-2"></i>Financial term normalization</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Ticker symbol handling</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>URL and mention removal</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Stopword removal</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Text length optimization</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-chart-bar me-2"></i>Preprocessing Impact</h6>
+                                        <div id="preprocessingStats">
+                                            <p><strong>Average length reduction:</strong> ~20%</p>
+                                            <p><strong>Text normalization:</strong> Financial terms standardized</p>
+                                            <p><strong>Ready for training:</strong> 5,222 samples</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Training Tab -->
+            <div class="tab-pane fade" id="training" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-robot me-2"></i>Model Training & Retraining</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="retrainForm">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="alpha" class="form-label">Alpha (Smoothing):</label>
+                                                <input type="number" class="form-control" id="alpha" value="1.0" step="0.1" min="0.1" max="10">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="maxFeatures" class="form-label">Max Features:</label>
+                                                <select class="form-control" id="maxFeatures">
+                                                    <option value="3000">3,000</option>
+                                                    <option value="5000" selected>5,000</option>
+                                                    <option value="8000">8,000</option>
+                                                    <option value="10000">10,000</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="vectorizer" class="form-label">Vectorizer:</label>
+                                                <select class="form-control" id="vectorizer">
+                                                    <option value="tfidf" selected>TF-IDF</option>
+                                                    <option value="count">Count</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-ml">
+                                        <i class="fas fa-play me-2"></i>Retrain Model
+                                    </button>
+                                </form>
+                                
+                                <div id="retrainProgress" class="mt-3" style="display: none;">
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                    <small class="text-muted">Training in progress...</small>
+                                </div>
+                                
+                                <div id="retrainResults" class="mt-3" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Training Tips</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                                        <strong>Alpha:</strong> Higher values = more smoothing
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                                        <strong>Features:</strong> More features = more complexity
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                                        <strong>TF-IDF:</strong> Usually better for text classification
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Evaluation Results -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Model Evaluation</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <img src="/static/output/model_evaluation/confusion_matrix.png" class="img-fluid" alt="Confusion Matrix" onerror="this.style.display='none'">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <img src="/static/output/model_evaluation/roc_curves.png" class="img-fluid" alt="ROC Curves" onerror="this.style.display='none'">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Live Prediction
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const text = document.getElementById('textInput').value.trim();
+            
+            if (!text) {
+                alert('Please enter some text to analyze.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/predict/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    document.getElementById('sentimentResult').innerHTML = `
+                        <strong>Sentiment:</strong> 
+                        <span class="badge bg-${getSentimentColor(result.sentiment)} fs-6">${result.sentiment.toUpperCase()}</span>
+                    `;
+                    document.getElementById('confidenceResult').innerHTML = `
+                        <strong>Confidence:</strong> ${(result.confidence * 100).toFixed(1)}%
+                    `;
+                    
+                    let probsHtml = '<strong>Probabilities:</strong><br>';
+                    for (const [sentiment, prob] of Object.entries(result.probabilities)) {
+                        probsHtml += `${sentiment}: ${(prob * 100).toFixed(1)}% `;
+                    }
+                    document.getElementById('probabilitiesResult').innerHTML = probsHtml;
+                    
+                    document.getElementById('predictionResult').style.display = 'block';
+                } else {
+                    alert('Prediction failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while making the prediction.');
+            }
+        });
+
+        function getSentimentColor(sentiment) {
+            switch(sentiment.toLowerCase()) {
+                case 'positive': return 'success';
+                case 'negative': return 'danger';
+                case 'neutral': return 'secondary';
+                default: return 'primary';
+            }
+        }
+
+        // Load Model History
+        async function loadModelHistory() {
+            try {
+                const response = await fetch('/model_history/');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const container = document.getElementById('modelHistoryContainer');
+                    let html = '';
+                    
+                    result.models.forEach((model, index) => {
+                        const isBest = index === 0; // Assuming first is best
+                        html += `
+                            <div class="model-history-item ${isBest ? 'best-model' : ''}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            ${isBest ? '<i class="fas fa-crown text-warning me-2"></i>' : ''}
+                                            Model ${model.id}
+                                        </h6>
+                                        <small class="text-muted">Accuracy: ${(model.accuracy * 100).toFixed(1)}%</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="loadModel('${model.id}')">
+                                        Load
+                                    </button>
+                                </div>
+                                <small class="text-muted">
+                                    Alpha: ${model.parameters.alpha}, Features: ${model.parameters.max_features}
+                                </small>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading model history:', error);
+            }
+        }
+
+        // Load specific model
+        async function loadModel(modelId) {
+            try {
+                const response = await fetch('/load_historical_model/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ model_id: modelId })
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Model loaded successfully!');
+                    location.reload();
+                } else {
+                    alert('Failed to load model: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error loading model:', error);
+                alert('An error occurred while loading the model.');
+            }
+        }
+
+        // Model Retraining
+        document.getElementById('retrainForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const params = {
+                alpha: parseFloat(document.getElementById('alpha').value),
+                max_features: parseInt(document.getElementById('maxFeatures').value),
+                vectorizer_type: document.getElementById('vectorizer').value
+            };
+
+            document.getElementById('retrainProgress').style.display = 'block';
+            document.getElementById('retrainResults').style.display = 'none';
+
+            try {
+                const response = await fetch('/retrain/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(params)
+                });
+
+                const result = await response.json();
+                document.getElementById('retrainProgress').style.display = 'none';
+                
+                if (result.status === 'success') {
+                    document.getElementById('retrainResults').innerHTML = `
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-check-circle me-2"></i>Model Retrained Successfully!</h6>
+                            <p><strong>Accuracy:</strong> ${(result.results.accuracy * 100).toFixed(1)}%</p>
+                            <p><strong>Precision:</strong> ${(result.results.precision * 100).toFixed(1)}%</p>
+                            <p><strong>Recall:</strong> ${(result.results.recall * 100).toFixed(1)}%</p>
+                            <p><strong>F1-Score:</strong> ${(result.results.f1_score * 100).toFixed(1)}%</p>
+                        </div>
+                    `;
+                    document.getElementById('retrainResults').style.display = 'block';
+                    
+                    // Reload model history
+                    loadModelHistory();
+                } else {
+                    document.getElementById('retrainResults').innerHTML = `
+                        <div class="alert alert-danger">
+                            <h6><i class="fas fa-exclamation-circle me-2"></i>Training Failed</h6>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                    document.getElementById('retrainResults').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error retraining model:', error);
+                document.getElementById('retrainProgress').style.display = 'none';
+                document.getElementById('retrainResults').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h6><i class="fas fa-exclamation-circle me-2"></i>Error</h6>
+                        <p>An error occurred while retraining the model.</p>
+                    </div>
+                `;
+                document.getElementById('retrainResults').style.display = 'block';
+            }
+        });
+
+        // Load performance metrics
+        async function loadPerformanceMetrics() {
+            try {
+                const response = await fetch('/model_info/');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const container = document.getElementById('performanceMetrics');
+                    container.innerHTML = `
+                        <div class="col-md-3">
+                            <div class="card metric-card performance-good">
+                                <div class="card-body text-center">
+                                    <h4 class="text-primary">${(result.accuracy * 100).toFixed(1)}%</h4>
+                                    <small class="text-muted">Accuracy</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body text-center">
+                                    <h4 class="text-info">${result.feature_count}</h4>
+                                    <small class="text-muted">Features</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body text-center">
+                                    <h4 class="text-success">${result.training_samples}</h4>
+                                    <small class="text-muted">Training Samples</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body text-center">
+                                    <h4 class="text-warning">${result.classes.length}</h4>
+                                    <small class="text-muted">Classes</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading performance metrics:', error);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadModelHistory();
+            loadPerformanceMetrics();
+        });
+    </script>
+</body>
+</html>

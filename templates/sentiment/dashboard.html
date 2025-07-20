@@ -1,0 +1,171 @@
+{% extends 'sentiment/base.html' %}
+
+{% block title %}Dashboard - Financial Sentiment Analysis{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tachometer-alt"></i> Financial Sentiment Analysis Dashboard</h1>
+    <p class="lead">Complete ML pipeline for analyzing sentiment in financial texts using Naive Bayes classification.</p>
+</div>
+
+<div class="row">
+    <!-- Model Status Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-robot"></i> Model Status</h5>
+            </div>
+            <div class="card-body">
+                {% if model_info.status == 'loaded' %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> Model loaded and ready for predictions
+                    </div>
+                    <ul class="list-unstyled">
+                        <li><strong>Model Type:</strong> {{ model_info.model_type }}</li>
+                        <li><strong>Status:</strong> <span class="badge bg-success">Active</span></li>
+                    </ul>
+                    <a href="{% url 'prediction_interface' %}" class="btn btn-primary">
+                        <i class="fas fa-brain"></i> Make Predictions
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> No trained model found
+                    </div>
+                    <p>Train a model using the pipeline to enable predictions.</p>
+                    <a href="{% url 'dataset_upload' %}" class="btn btn-warning">
+                        <i class="fas fa-play"></i> Start Pipeline
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'dataset_upload' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-upload"></i> Upload New Dataset
+                    </a>
+                    {% if model_info.status == 'loaded' %}
+                    <a href="{% url 'prediction_interface' %}" class="btn btn-outline-success">
+                        <i class="fas fa-brain"></i> Predict Sentiment
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'model_training' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-robot"></i> Train New Model
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pipeline Overview -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Pipeline Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="metric-card">
+                            <div class="metric-value">8</div>
+                            <div class="metric-label">Pipeline Steps</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="metric-value">3</div>
+                            <div class="metric-label">Sentiment Classes</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="metric-value">70.4%</div>
+                            <div class="metric-label">Target Accuracy</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h6 class="mt-4 mb-3">Pipeline Features:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Dataset upload & validation</li>
+                            <li><i class="fas fa-check text-success"></i> Exploratory data analysis</li>
+                            <li><i class="fas fa-check text-success"></i> Class distribution visualization</li>
+                            <li><i class="fas fa-check text-success"></i> Word frequency analysis</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Advanced text preprocessing</li>
+                            <li><i class="fas fa-check text-success"></i> Naive Bayes classification</li>
+                            <li><i class="fas fa-check text-success"></i> Model evaluation & metrics</li>
+                            <li><i class="fas fa-check text-success"></i> Real-time prediction interface</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Getting Started -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-rocket"></i> Getting Started</h5>
+            </div>
+            <div class="card-body">
+                <h6>Follow these steps to use the sentiment analysis pipeline:</h6>
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Upload Dataset</div>
+                            Upload a CSV file with 'Sentence' and 'Sentiment' columns, or select an existing dataset.
+                        </div>
+                        <a href="{% url 'dataset_upload' %}" class="btn btn-sm btn-outline-primary">Start</a>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Analyze & Filter</div>
+                            View class distribution, word clouds, and filter samples per class.
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">Auto</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Preprocess Text</div>
+                            Clean and normalize text data with customizable preprocessing options.
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">Config</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Train Model</div>
+                            Configure and train Naive Bayes model with cross-validation.
+                        </div>
+                        <span class="badge bg-warning rounded-pill">ML</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Evaluate & Predict</div>
+                            View model performance metrics and make predictions on new text.
+                        </div>
+                        <span class="badge bg-success rounded-pill">Deploy</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

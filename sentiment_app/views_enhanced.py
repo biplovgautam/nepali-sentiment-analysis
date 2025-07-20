@@ -267,8 +267,6 @@ class EnhancedFinancialSentimentAnalyzer:
             'lowercase': True,
             'remove_punctuation': False,  # Keep some punctuation for financial context
             'remove_stopwords': True,
-            'remove_numbers': True,
-            'normalize_tickers': True,  # Added missing key
             'lemmatization': True,
             'remove_short_words': True,
             'normalize_financial': True,
@@ -826,13 +824,6 @@ def home(request):
     return render(request, 'sentiment/enhanced_dashboard.html', context)
 
 
-def ml_dashboard(request):
-    """
-    Main ML-focused dashboard view - loads first with predictions and model history.
-    """
-    return render(request, 'sentiment/ml_dashboard.html')
-
-
 @csrf_exempt
 def retrain_model(request):
     """Endpoint to retrain model with custom parameters."""
@@ -995,110 +986,3 @@ def predict_batch_api(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-
-@csrf_exempt
-def model_info(request):
-    """
-    Get current model information and performance metrics.
-    """
-    try:
-        # Load model if available
-        if os.path.exists(MODEL_PATH) and os.path.exists(VECTORIZER_PATH):
-            model = joblib.load(MODEL_PATH)
-            vectorizer = joblib.load(VECTORIZER_PATH)
-            
-            # Try to load train dataset to get statistics
-            train_data_path = os.path.join(DATA_DIR, 'train_dataset.csv')
-            if os.path.exists(train_data_path):
-                train_df = pd.read_csv(train_data_path)
-                training_samples = len(train_df)
-            else:
-                training_samples = "Unknown"
-            
-            # Get feature count from vectorizer
-            if hasattr(vectorizer, 'get_feature_names_out'):
-                feature_count = len(vectorizer.get_feature_names_out())
-            else:
-                feature_count = getattr(vectorizer, 'max_features', 'Unknown')
-            
-            # Load latest results if available
-            accuracy = 0.70  # Default from recent training
-            try:
-                # Try to load from model history
-                history_file = os.path.join(OUTPUT_DIR, 'model_history', 'model_performance.json')
-                if os.path.exists(history_file):
-                    with open(history_file, 'r') as f:
-                        history = json.load(f)
-                        if history:
-                            accuracy = history[0].get('accuracy', 0.70)
-            except:
-                pass
-            
-            return JsonResponse({
-                'status': 'success',
-                'model_status': 'loaded',
-                'model_type': type(model).__name__,
-                'accuracy': accuracy,
-                'classes': ['positive', 'negative', 'neutral'],
-                'feature_count': feature_count,
-                'training_samples': training_samples,
-                'training_date': datetime.now().isoformat()
-            })
-        else:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Model not found'
-            }, status=404)
-            
-    except Exception as e:
-        logger.error(f"Error getting model info: {e}")
-        return JsonResponse({
-            'status': 'error',
-            'message': str(e)
-        }, status=500)
-
-
-def model_history(request):
-    """
-    Get model training history and performance comparison.
-    """
-    try:
-        # Get history from the analyzer instance
-        history_data = analyzer.model_history
-        
-        # Sort by accuracy (best first)
-        sorted_models = sorted(history_data, key=lambda x: x.get('results', {}).get('accuracy', 0), reverse=True)
-        
-        # Add ranking and format for display
-        formatted_models = []
-        for i, model in enumerate(sorted_models):
-            results = model.get('results', {})
-            parameters = model.get('parameters', {})
-            
-            formatted_model = {
-                'id': model.get('model_id', i + 1),
-                'rank': i + 1,
-                'is_best': (i == 0),
-                'accuracy': results.get('accuracy', 0),
-                'precision': results.get('precision', 0),
-                'recall': results.get('recall', 0),
-                'f1_score': results.get('f1_score', 0),
-                'parameters': parameters,
-                'timestamp': model.get('timestamp', '')
-            }
-            formatted_models.append(formatted_model)
-            
-        return JsonResponse({
-            'status': 'success',
-            'models': formatted_models,
-            'total_models': len(formatted_models)
-        })
-        
-    except Exception as e:
-        logger.error(f"Error loading model history: {e}")
-        return JsonResponse({
-            'status': 'error',
-            'message': str(e),
-            'models': []
-        }, status=500)

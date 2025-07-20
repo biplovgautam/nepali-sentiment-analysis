@@ -471,6 +471,50 @@ class ModelEvaluator:
                 self.plot_roc_curves(y_true, y_proba, class_names, roc_path)
         
         return report_path
+    
+    def comprehensive_evaluation(self, model, X_test, y_test, output_dir=None):
+        """
+        Perform comprehensive model evaluation with visualizations.
+        
+        Args:
+            model: Trained model
+            X_test: Test features
+            y_test: Test labels
+            output_dir: Directory to save outputs
+            
+        Returns:
+            dict: Comprehensive evaluation results
+        """
+        if output_dir:
+            self.output_dir = output_dir
+            os.makedirs(self.output_dir, exist_ok=True)
+        
+        logger.info("Starting comprehensive model evaluation...")
+        
+        # Get predictions and probabilities
+        y_pred = model.predict(X_test)
+        y_proba = model.predict_proba(X_test)
+        
+        # Calculate metrics
+        metrics = self.calculate_metrics(y_test, y_pred, y_proba)
+        
+        # Generate visualizations
+        self.plot_confusion_matrix(y_test, y_pred, 
+                                 save_path=os.path.join(self.output_dir, 'confusion_matrix.png'))
+        
+        self.plot_classification_report(y_test, y_pred,
+                                      save_path=os.path.join(self.output_dir, 'classification_report.png'))
+        
+        # Generate ROC curves if we have probabilities
+        if y_proba is not None:
+            self.plot_roc_curves(y_test, y_proba,
+                               save_path=os.path.join(self.output_dir, 'roc_curves.png'))
+        
+        # Save detailed evaluation report
+        self.save_evaluation_report(metrics, os.path.join(self.output_dir, 'evaluation_report.txt'))
+        
+        logger.info("Comprehensive evaluation completed")
+        return metrics
 
 
 def evaluate_model_comprehensive(y_true: np.ndarray, y_pred: np.ndarray,

@@ -1,0 +1,416 @@
+Softwarica College of IT & E-Commerce
+STW5000CEM Introduction to Artificial
+
+Intelligence
+Assignment Brief 2024/2025
+Module Title
+Introduction to Artificial
+Intelligence
+
+Ind/Group
+Ind
+
+Cohort
+Module Code
+March 2025 STW5000CEM
+–Regular /
+Resit
+
+Coursework Title
+Coursework Component
+
+Hand out date:
+15 June, 2025
+
+Module Leader
+Er. Suman Shrestha
+
+Due date:
+TBD
+
+Estimated Time (hrs): 100 hours
+Word Limit*: 4000
+
+Coursework type:
+Report
+
+% of Module Mark
+Coursework : 100%
+
+Submission arrangement online via Schoolworkspro page: The coursework report must be
+submitted via the Schoolworkspro Page. All relevant project details for the course are
+accessible on Schoolworkspro.
+Mark and Feedback date: Mark and feedback will be provided within 3 weeks of final
+submission.
+Mark and Feedback method: All marks will be delivered on campus4.0. Written feedback will
+be provided.
+
+Module Learning Outcomes Assessed:
+1. Comprehend the fundamental theoretical principles that are relevant to the Artificial
+Intelligence.
+2. Design / Implement an AI model to solve some real-world problems.
+3. Relevant performance metrics should be used to evaluate the performance of
+implemented AI model
+4. Suitable Data visualization technique should be used
+5.
+
+Work with version control systems
+
+Coursework (100%))
+
+Overview and Purpose
+
+This individual coursework is designed to assess your understanding of the module’s core
+concepts by having your design, implement, and evaluate an AI model to solve a realworld problem. You are required to apply algorithmic techniques discussed in class and
+demonstrate problem-solving, experimentation, and critical thinking.
+You will create an AI-driven solution using one or more algorithms in the domains of:
+• Classification
+• Clustering
+• Recommendation Systems
+• Search Techniques
+• Constraint Satisfaction Problems
+Key Tasks and Deliverables
+
+Each student must complete the following:
+1. Topic Selection & Problem Definition
+a. Choose a topic aligned with one of the AI problem domains.
+b. Coordinate the topic with your Module Leader for approval.
+c. Clearly define the problem and justify its relevance and impact.
+2. Data Collection & Preprocessing
+a. Identify and source a suitable dataset.
+b. Explain your data preprocessing steps: cleaning, normalization, feature
+selection, etc.
+3. Model Design
+a. Choose an appropriate AI algorithm from the module.
+b. Provide justification for your algorithm selection.
+c. Design and implement the solution using custom-defined data structures,
+functions, or classes where appropriate.
+4. Training & Evaluation
+a. Train the model and test it using standard practices.
+b. Evaluate performance using relevant metrics (accuracy, F1 score,
+precision, recall, RMSE, etc.).
+c. Include a comparative analysis if multiple models or approaches are
+tested.
+5. Interface Development
+a. Develop a CLI or GUI to demonstrate your project.
+b. The interface should allow users to interact with the model in a meaningful
+way (e.g., predict, search, recommend).
+6. Version Control
+a. You must use GitHub Classroom for source code management.
+b. Commit code frequently with meaningful messages.
+7. Report Writing
+a. A final 4000-word report must include:
+i. Abstract and introduction
+ii. Literature review of related AI work
+iii. Problem description and methodology
+iv. Algorithm and implementation details
+v. Data collection and preprocessing
+vi. Experimental results and analysis
+vii. Conclusion and future improvements
+viii. Proper APA 7th referencing throughout
+8. Video Demonstration
+a. A 10-minute video demonstrating:
+
+i. Problem overview
+ii. Code and interface walkthrough
+iii. Model in action
+iv. Brief explanation of results
+9. Viva Session
+a. Each student will defend their work through a 15-20-minute individual viva.
+b. You may be asked to run your code, explain design decisions, and discuss
+evaluation results
+c. Questions will be based on the coursework and/or topics covered in class
+
+Example Topics
+•
+•
+•
+•
+•
+•
+•
+
+Nepali Stock Price Prediction using Regression
+Movie Recommendation System using Collaborative Filtering
+Spam Email Detection using Naive Bayes Classifier
+Customer Segmentation using K-Means Clustering
+Sentiment Analysis of Tweets using Naive Bayes Classifier
+Constraint Solver for Timetabling using Backtracking
+Credit Card Fraud Detection using Decision Trees
+
+Marking Criteria
+Problem Understanding and Justification
+Use of Appropriate AI Algorithm
+Data Collection and Preprocessing
+Model Design and Implementation
+Evaluation and Metrics
+Interface Functionality (CLI / GUI)
+Code Quality and Github usage
+Report Structure and Clarity
+Referencing and Academic integrity
+Viva Performance
+
+Weight
+5%
+10%
+5%
+15%
+10%
+5%
+10%
+10%
+5%
+25%
+
+Note:
+1. Students are strongly encouraged to utilize their own custom-defined data
+structures, function or class wherever possible instead of relying on the built-in
+data structures, functions or classes provided by the programming language.
+2. You are expected to use the APA 7th style for referencing. For support and advice
+on this, students can contact the Centre for Academic Writing (CAW).
+3. Please notify your registry course support team and module leader for disability
+support.
+
+4. The University is not liable for any loss or corruption of coursework stored on
+disks, laptops, or personal computers. It is essential for students to frequently back
+up their work and are advised to save it in the University system.
+5. If there are technical or performance issues that prevent students submitting
+coursework through the online coursework submission system on the day of a
+coursework deadline, an appropriate extension to the coursework submission
+deadline will be agreed. This extension will normally be 24 hours or the next
+working day if the deadline falls on a Friday or over the weekend period. This will
+be communicated via your Module Leader.
+6. Collusion between students (where sections of your work are like the work
+submitted by other students in this or previous module cohorts) is taken extremely
+seriously and will be reported to the academic conduct panel. This applies to both
+coursework and exam answers.
+7. If there is a significant contrast in the writing style, knowledge, and skill level
+exhibited between your class discussions, test conditions, and a coursework
+assignment, it may be necessary for you to participate in an in-person
+examination. The purpose of this examination would be to confirm that the
+coursework assignment has been solely completed by you.
+8. If you make use of the services of a proof-reader in your work, you must keep your
+original version and make it available as a demonstration of your written efforts.
+9. It is strictly prohibited to submit work for assessment that has already been
+submitted, either partially or in its entirety, for your current course or any other
+qualification offered by the college. However, in the case of resits, you may be
+asked to revise and enhance a previous attempt for the coursework. The specific
+guidelines regarding this requirement will be outlined in your assignment brief or
+provided within the course or module information. If you are referencing earlier
+work that has been previously published or submitted, it must be cited clearly.
+Submitting identical pieces of work concurrently can also be considered as selfplagiarism.
+
+Learning Outcomes matrix:
+Question No.
+
+Learning Outcomes Assessed
+
+Coursework
+
+1,2, 3, 4,5
+
+40% >=above
+
+50% >= above 60%>=above
+
+70% >= above
+
+Problem
+Understan
+ding and
+Dataset
+Handling
+(15%)
+
+Weak problem
+definition with
+little
+justification.
+Uses an
+inappropriate or
+poorly prepared
+dataset, with
+significant
+preprocessing
+issues.
+
+Basic problem
+definition with
+limited
+justification.
+Uses a dataset
+but
+preprocessing is
+minimal or has
+noticeable
+flaws.
+
+Defines the problem
+well with good
+justification. Uses a
+relevant dataset with
+proper preprocessing
+but minor issues
+
+Clearly defines the
+problem with strong
+justification. Uses a
+high-quality dataset,
+applies advanced
+preprocessing
+techniques, and
+handles
+missing/noisy data
+effectively.
+
+Model
+Selection
+and
+Implement
+ation( 20%)
+
+Model selection
+is weak or
+inappropriate.
+Implementation
+is functional but
+poorly
+structured,
+inefficient, or
+missing key
+elements.
+
+Model selection
+is acceptable
+but lacks proper
+justification.
+Implementation
+works but has
+inefficiencies or
+lacks clarity.
+
+Selects a suitable
+model with good
+justification. Code is
+mostly efficient with
+minor issues. Some
+parameter tuning is
+attempted.
+
+Selects the bestsuited model with
+strong justification.
+Implements
+efficiently with clean,
+well-documented
+code. Considers
+hyperparameter
+tuning.
+
+Performan
+ce
+Evaluation
+&
+Optimizatio
+n(20%)
+
+Uses incorrect or
+minimal
+evaluation
+metrics. No
+meaningful
+optimization
+attempted.
+
+Uses basic
+evaluation
+metrics but lacks
+deeper analysis
+or optimization.
+
+Uses proper metrics
+and applies some
+model evaluation
+techniques. Minor
+optimizations
+attempted.
+
+Uses appropriate
+evaluation metrics,
+applies crossvalidation, and
+compares models.
+Optimizes
+performance
+effectively.
+
+Innovation
+and realworld
+applicabilit
+y (15%)
+
+Lacks innovation.
+Minimal realworld
+applicability
+considered.
+
+Project follows
+standard
+approaches with
+little innovation.
+Application to
+real-world
+scenarios is
+weak.
+
+Shows some
+innovation and
+attempts to apply
+practical
+improvements.
+
+Demonstrates
+creative thinking,
+applies novel
+techniques, and
+considers real-world
+applications
+effectively..
+
+Presentatio
+n and
+Documenta
+tion (20%)
+
+Report is
+disorganized,
+missing key
+explanations.
+Presentation
+lacks clarity or
+engagement.
+
+Report is
+understandable
+but lacks depth,
+clarity, or proper
+formatting.
+Presentation is
+average.
+
+Good report structure
+with mostly clear
+explanations.
+Presentation is
+organized but lacks
+some details.
+
+Clear, well-structured
+report with strong
+justification and
+references.
+Presentation is
+engaging, logical, and
+professional.
+
+Mark allocation guidelines to students: marking rubric
+
+
