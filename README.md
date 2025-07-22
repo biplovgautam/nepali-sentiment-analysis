@@ -16,6 +16,34 @@ I would like to express my sincere gratitude to **Er. Suman Shrestha**, the modu
 
 This project implements a financial sentiment analysis system using supervised learning techniques, specifically focusing on Naive Bayes classification. The system analyzes financial text data to classify sentiment as positive, negative, or neutral, providing valuable insights for financial decision-making and market analysis.
 
+## Modern Web Interface
+
+The project features a **responsive, modern web dashboard** built with Django and enhanced with:
+
+### 🎨 **Design Features**
+- **Financial Theme**: Gradient backgrounds with subtle patterns evoking financial markets
+- **Floating Sidebar**: Non-intrusive left sidebar with model switching capabilities
+- **Glass Morphism**: Modern backdrop-blur effects for cards and components
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+
+### 🔧 **Interactive Components**
+- **Model Switcher**: Real-time switching between Original and Balanced models
+- **Quick Prediction**: Instant sentiment analysis with confidence scoring
+- **Performance Metrics**: Live model statistics and comparison charts
+- **Dataset Overview**: Visual representation of class distribution and statistics
+
+### 📱 **User Experience**
+- **Single Page Interface**: All functionality accessible from one dashboard
+- **Collapsible Sidebar**: Space-efficient design with expandable/collapsible navigation
+- **Real-time Updates**: Dynamic content updates without page refreshes
+- **Visual Feedback**: Color-coded results with intuitive sentiment indicators
+
+### 🚀 **Technical Stack**
+- **Frontend**: Bootstrap 5.3, Font Awesome 6.4, Google Fonts (Inter)
+- **Backend**: Django 4.2.4 with simplified views and API endpoints
+- **Styling**: Modern CSS with CSS Grid, Flexbox, and custom animations
+- **JavaScript**: Vanilla JS for interactivity and API communication
+
 ## Dataset Information
 
 - **Source**: [Financial Sentiment Analysis Dataset](https://www.kaggle.com/datasets/sbhatti/financial-sentiment-analysis) from Kaggle
@@ -105,4 +133,54 @@ The balanced approach demonstrates significant improvement in overall performanc
 ## Conclusion
 
 Dataset balancing through intelligent duplication of high-quality samples proves effective for improving sentiment classification performance. The 38.5% improvement in negative sentiment detection while maintaining overall accuracy demonstrates the value of addressing class imbalance in financial text analysis.
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.8 or higher
+- pip package manager
+
+### Installation & Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd aiassignment
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run the application**
+   ```bash
+   python start_server.py
+   ```
+   
+   Or manually:
+   ```bash
+   python manage.py migrate
+   python manage.py runserver
+   ```
+
+4. **Access the dashboard**
+   Open your browser and navigate to: `http://localhost:8000`
+
+### 🎯 Features Available
+
+- **Model Comparison**: Switch between Original and Balanced models in real-time
+- **Instant Predictions**: Test sentiment analysis with your own financial text
+- **Performance Metrics**: View accuracy, F1-score, precision, and recall
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **API Endpoints**: Programmatic access for batch processing
+
+### 📊 Model Performance
+
+| Model | Accuracy | F1-Score | Negative F1 | Improvement |
+|-------|----------|----------|-------------|-------------|
+| Original | 66.3% | 0.637 | 0.516 | Baseline |
+| Balanced | **68.3%** | **0.683** | **0.714** | **+7.1%** |
+
+The balanced model shows significant improvement, especially for negative sentiment detection (+38.5% F1-score improvement).
 
