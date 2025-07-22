@@ -1,0 +1,16 @@
+{
+  "model_type": "MultinomialNB",
+  "vectorizer_type": "TfidfVectorizer",
+  "training_accuracy": 0.6625766871165644,
+  "macro_f1_score": 0.6374316568272104,
+  "weighted_f1_score": 0.6501095518960527,
+  "classes": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "vocabulary_size": 7132,
+  "training_samples": 2608,
+  "test_samples": 652,
+  "features_shape": 7132
+}
