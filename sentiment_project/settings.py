@@ -63,7 +63,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Additional static file directories
 STATICFILES_DIRS = [
-    BASE_DIR / 'output',  # For serving ML output images
+    BASE_DIR / 'static',  # Main static files directory
 ]
 
 # Media files
