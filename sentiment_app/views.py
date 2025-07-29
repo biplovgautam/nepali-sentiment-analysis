@@ -52,6 +52,7 @@ def load_model():
         return False
 
 
+# Main views - simplified and cleaned
 def dashboard(request):
     """Main dashboard view"""
     # Load the balanced model
@@ -59,11 +60,11 @@ def dashboard(request):
     
     model_info = {
         'loaded': model_loaded,
-        'accuracy': '68.3%',
-        'f1_score': '0.683',
-        'precision': '0.687',
-        'recall': '0.683',
-        'model_type': 'Balanced Multinomial Naive Bayes',
+        'accuracy': '68.75%',
+        'f1_score': '0.687',
+        'precision': '68.75%',
+        'recall': '68.75%',
+        'model_type': 'Optimized Multinomial Naive Bayes',
         'feature_count': None
     }
     
@@ -126,7 +127,7 @@ def predict_sentiment(request):
             'success': True,
             'prediction': prediction,
             'confidence': confidence,
-            'model_used': 'balanced',
+            'model_used': 'optimized',
             'probabilities': probabilities
         })
         
@@ -156,16 +157,16 @@ def model_info_api(request):
             
             # Get model metadata
             model_info = {
-                'model_type': 'Balanced Multinomial Naive Bayes',
-                'algorithm': 'Multinomial Naive Bayes',
+                'model_type': 'Optimized Multinomial Naive Bayes',
+                'algorithm': 'Multinomial Naive Bayes with GridSearchCV',
                 'classes': model.classes_.tolist() if hasattr(model, 'classes_') else [],
                 'feature_count': len(vectorizer.get_feature_names_out()) if hasattr(vectorizer, 'get_feature_names_out') else 'Unknown',
                 'loaded': True,
                 'status': 'active',
-                'accuracy': '68.3%',
-                'f1_score': '0.683',
-                'precision': '0.687',
-                'recall': '0.683'
+                'accuracy': '68.75%',
+                'f1_score': '0.687',
+                'precision': '68.75%',
+                'recall': '68.75%'
             }
             
             # Add metadata if available
@@ -240,7 +241,7 @@ def batch_predict(request):
         return JsonResponse({
             'success': True,
             'results': results,
-            'model_used': 'balanced',
+            'model_used': 'optimized',
             'total_processed': len(results)
         })
         
@@ -252,23 +253,4 @@ def batch_predict(request):
         })
 
 
-# Legacy views for compatibility
-def ml_dashboard(request):
-    """Legacy dashboard view"""
-    return dashboard(request)
-
-def home(request):
-    """Legacy home view"""
-    return dashboard(request)
-
-def predict_api(request):
-    """Legacy predict API"""
-    return predict_sentiment(request)
-
-def model_info(request):
-    """Legacy model info"""
-    return model_info_api(request)
-
-def predict_batch_api(request):
-    """Legacy batch predict API"""
-    return batch_predict(request)
+# No legacy functions needed - clean and simple

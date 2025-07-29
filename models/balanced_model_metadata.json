@@ -1,27 +1,21 @@
 {
-  "model_info": {
-    "type": "MultinomialNB",
-    "balanced": true,
-    "alpha": 1.0,
-    "created_date": "2025-07-28T13:31:20.735483"
-  },
-  "performance_metrics": {
-    "accuracy": 0.6833333333333333,
-    "macro_f1": 0.6828221923568987,
-    "class_wise_f1": {
-      "negative": 0.7142857142857143,
-      "neutral": 0.6705653021442495,
-      "positive": 0.6636155606407322
-    }
-  },
-  "dataset_info": {
-    "total_samples": 3600,
-    "training_samples": 2880,
-    "features": 8289,
-    "classes": [
-      "negative",
-      "neutral",
-      "positive"
+  "model_type": "MultinomialNB",
+  "optimization_method": "GridSearchCV_5fold",
+  "dataset_size": 3600,
+  "training_size": 2880,
+  "test_size": 720,
+  "accuracy": 0.6875,
+  "macro_f1": 0.6870769324327184,
+  "best_params": {
+    "nb__alpha": 0.5,
+    "tfidf__max_df": 0.9,
+    "tfidf__max_features": 8000,
+    "tfidf__min_df": 1,
+    "tfidf__ngram_range": [
+      1,
+      2
     ]
-  }
+  },
+  "cv_score": 0.6989698766992685,
+  "created_date": "2025-07-29T15:09:49.714778"
 }
